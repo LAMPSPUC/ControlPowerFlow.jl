@@ -1,14 +1,17 @@
 function objective_slack(pm::_PM.AbstractPowerModel)
     obj = 0.0
+
     for (n, nw_ref) in _PM.nws(pm)
-        obj += sum(var(pm, n, :sl_th_ref_pos))
-        obj += sum(var(pm, n, :sl_th_ref_neg))
-        obj += sum(var(pm, n, :sl_volt_sp_pos))
-        obj += sum(var(pm, n, :sl_volt_sp_neg))
-        obj += sum(var(pm, n, :sl_const_balance_p_pos))
-        obj += sum(var(pm, n, :sl_const_balance_p_neg))
-        obj += sum(var(pm, n, :sl_const_balance_q_pos))
-        obj += sum(var(pm, n, :sl_const_balance_q_neg))
+        for (funct_name, filt) in ref(pm, n, :slack)
+            if haskey(slack_function, funct_name)
+                var_nm = slack_function[funct_name][2]
+                pos_nm = "sl_"*var_nm*"_pos"
+                neg_nm = "sl_"*var_nm*"_neg"
+
+                obj += sum(var(pm, n, Symbol(pos_nm)))
+                obj += sum(var(pm, n, Symbol(neg_nm)))
+            end
+        end
     end
 
     JuMP.@objective(pm.model, Min,

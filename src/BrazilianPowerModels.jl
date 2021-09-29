@@ -1,6 +1,6 @@
 module BrazilianPowerModels
 
-using ParserPWF
+include("../parserpwf/src/ParserPWF.jl")
 
 import JuMP
 import JuMP: @variable, @constraint, @NLconstraint, @objective, @NLobjective, @expression, @NLexpression
@@ -19,11 +19,12 @@ function silence()
 end
 
 include("core/base.jl")
-include("core/variable.jl")
 include("core/constraint.jl")
 include("core/constraint_template.jl")
+include("core/data.jl")
 include("core/objective.jl")
 include("core/slack.jl")
+include("core/variable.jl")
 
 include("form/acp.jl")
 include("form/shared.jl")

@@ -1,3 +1,9 @@
+"generates variables for both `active` and `reactive` generation"
+function variable_gen_power(pm::_PM.AbstractPowerModel; kwargs...)
+    _PM.variable_gen_power_real(pm; bounded = false)
+    _PM.variable_gen_power_imaginary(pm; bounded = false)
+end
+
 "variable: `t[i]` for `i` in `shunt`es"
 function variable_shunt(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     bs = var(pm, nw)[:bs] = JuMP.@variable(pm.model,
