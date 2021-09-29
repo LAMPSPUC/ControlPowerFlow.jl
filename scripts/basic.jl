@@ -6,14 +6,104 @@ using PowerModels, Ipopt, JuMP
 using ParserPWF
 
 # PWF system file
-file = "scripts\\data\\pwf\\EMS_fase1.pwf"
+file = "scripts\\data\\pwf\\3busfrank.pwf"
 
 # Reading PWF and converting to PowerModels network data dictionary
 network_pwf = BrazilianPowerModels.ParserPWF.parse_pwf_to_powermodels(file)
 
-result = BrazilianPowerModels.run_br_pf(network_pwf, ACPPowerModel, Ipopt.Optimizer)
-result["solution"]["shunt"]
+slack = Dict(
+    "slack" => Dict(
+        # "constraint_model_voltage"                 => true,
+        # "constraint_theta_ref"                     => true,
+        # "constraint_voltage_magnitude_setpoint"    => true,
+        # "constraint_gen_setpoint_active"           => true,
+        # "constraint_gen_setpoint_reactive"         => true,
+        # "constraint_gen_reactive_bounds"           => true,
+        # "constraint_power_balance_active"          => true,
+        # "constraint_power_balance_reactive"        => true,
+        # "constraint_shunt"                         => true,
+        # "constraint_dcline_setpoint_active_fr"     => true,
+        # "constraint_dcline_setpoint_active_to"     => true,
+    )
+)
 
+control = Dict(
+    "control" => Dict(
+        # "voltage"      => true,
+        # "gen_active"   => true,
+        # "gen_reactive" => true,
+        # "shunt"        => true,
+        # "tap"          => true,
+    )
+)
+
+control_functions = Dict(
+    "voltage"       => (control_voltage_bounds),
+    "gen_active"    => (control_gen_active_bounds),
+    "gen_reactive"  => (control_gen_reactive_bounds),
+    "shunt"         => (control_shunt_bounds),
+    "tap"           => (control_tap_bounds),
+)
+
+
+BrazilianPowerModels._PM.update_data!(network_pwf, slack)
+solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-8)
+pm = BrazilianPowerModels._PM.instantiate_model(network_pwf, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+print(pm.model)
+result = BrazilianPowerModels.run_br_pf(network_pwf, solver)
+
+
+
+result["solution"]["bus"]["1"]
+
+
+var(pm, 0)
+
+# slack variables constraints
+# constraint_model_voltage
+# constraint_theta_ref
+# constraint_voltage_magnitude_setpoint
+# constraint_gen_setpoint_active
+# constraint_gen_setpoint_reactive
+# constraint_power_balance
+# constraint_shunt
+# constraint_dcline_setpoint_active
+
+
+print(pm.model)
+
+
+network_pwf["slack"]
+
+findall(x->x["slack"] == true, ref(pm, 0,:gen))
+
+print(pm.model)
+solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-3)
+result = BrazilianPowerModels.run_pf(network_pwf, ACPPowerModel, solver, BrazilianPowerModels.build_br_pf)
+
+result
+
+function check_violated_slacks(network_data::Dict)
+   el_with_slacks = ["bus", "gen", "shunt", "dcline"]
+    
+end
+
+
+result["solution"]["bus"]
+
+result["solution"]["gen"]
+result["solution"]["bus"]
+
+dict = BrazilianPowerModels.ParserPWF.parse_pwf(file)
+dict["DBAR"][3]["NUMBER"]
+
+network_pwf["shunt"]["2"]
+BrazilianPowerModels.fix_shunt!(network_pwf)
+
+solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-3)
+result = BrazilianPowerModels.run_pf(network_pwf, ACPPowerModel, solver, BrazilianPowerModels.build_br_slack_pf)
+
+BrazilianPowerModels.unfix_shunt!(network_pwf)
 
 
 
@@ -22,7 +112,18 @@ print(pm.model)
 solver = optimizer_with_attributes(Ipopt.Optimizer)
 set_optimizer(pm.model, solver)
 result = optimize_model!(pm)
-result["solution"]["bus"][""]
+
+update_data!(network_pwf, result["solution"])
+flow = calc_branch_flow_ac(network_pwf)
+update_data!(network_pwf, flow)
+
+filter(x, fb, tb, ct) = (x["f_bus"] == fb) && (x["t_bus"] == tb)
+findall(x->filter(x, 1890, 1889), network_pwf["branch"])
+
+network_pwf["branch"]["7728"]
+
+network_pwf["branch"]["1"]
+
 
 using JSON
 
@@ -63,6 +164,7 @@ function violated_slacks(slacks)
 
     return violated_slacks
 end
+
 
 slacks = value_slacks(pm)
 viol_slacks = violated_slacks(slacks)
