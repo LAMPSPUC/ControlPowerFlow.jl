@@ -1,0 +1,3 @@
+[submodule "parserpwf"]
+	path = parserpwf
+	url = https://gitlab.com/lampspuc/energisamust-ii/powermodels/parserpwf.git
