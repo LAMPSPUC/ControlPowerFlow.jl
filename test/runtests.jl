@@ -1,7 +1,11 @@
 using BrazilianPowerModels
+using PowerModels
+using JuMP
 
 using Test
 
+using Ipopt
+
 @testset begin
-    @test true
+    include("test_slacks.jl")
 end

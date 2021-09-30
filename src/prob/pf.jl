@@ -80,7 +80,7 @@ end
 function constraint_pq(pm::_PM.AbstractPowerModel, i::Int, bus::Dict)
     @assert bus["bus_type"] == 1
 
-    constraint_voltage_bounds(pm, i)
+    # constraint_voltage_bounds(pm, i)
 end
 
 function pv_bus(pm::_PM.AbstractPowerModel, i::Int)
