@@ -1,0 +1,63 @@
+TITU
+ONS - CASO REF SETEMBRO 2021 FP UMIDO CASO BASE                                                    
+DOPC IMPR
+(Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E
+QLIM L VLIM L CREM L CTAP L STEP L NEWT L RCVG L RMON L FILE L SUBS L
+CONT L NOVO L CELO L MFCT L AREG L STPO L VLCR L CPHS L IANG L
+99999
+DCTE
+(Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) 
+BASE   100. DASE   100. TEPA    .01 EXST    .04 TETP     5. TBPA     5.
+TLPP     1. TEPR    .01 QLST    .04 TLPR    .01 TLPQ     2. TSBZ    .01
+TSBA     5. ASTP    .05 VSTP     5. TLVC    .05 TLTC    .01 TSFR  .1E-7
+ZMAX   500. TLPV     .5 VDVM   200. VDVN    40. TUDC   .001 TADC    .01
+PGER    30. TPST    .02 VFLD    70. ZMIN  .0001 HIST    470 LFIT     10
+ACIT    100 LFCV      1 DCIT     10 VSIT     10 LPIT     50 LFLP     10
+PDIT     10 LCRT    200 LPRT     60 CSTP     5. ASDC     1.
+ICIT     50 DMAX      5 FDIV     2. ICMN    .05 VART     5. TSTP     32
+ICMV     .5 APAS    90. CPAR    70. VAVT     2. VAVF     5. VMVF    15.
+VPVT     2. VPVF     5. VPMF    10. VSVF    20. VINF     1. VSUP     1.
+TLSI     0. NDIR    20. STTR     5. TRPT   100. STIR     1. BFPO     1.
+LFPO     .1 TLMT     0. TLMF     0. TLMG     0.                        
+99999
+DBAR
+(Num)OETGb(   nome   )Gl( V)( A)( Pg)( Qg)( Qn)( Qm)(Bc  )( Pl)( Ql)( Sh)Are(Vf)M(1)(2)(3)(4)(5)(6)(7)(8)(9)(10
+                                 
+ 7202ML  GMIRACEPCH138 5         0.58-5.12                0.0  0.00      8831010                                   
+ 7222ML  GPALMAS-TO138 5          0.0  0.0                0.00  0.00     8831000                                   
+ 7239ML  GTOCANT-TO138 5                                  18.38-8.39     8831000                                   
+ 7240ML  GARAGU1-TO138 5         0.94-0.10                67.54 6.58     8831000                                   
+ 7241ML  GCOLIN--TO138 5                                  14.59-6.28     8831000                                   
+ 7242ML  GGUARA2-TO138 5                                  25.33-3.79     8831000                                   
+ 7243ML  GPARAI2-TO138 5                                  26.31-2.25     8831000                                   
+ 7244ML  GP.NACI-TO138 5                                  19.74-0.54     8831000                                   
+ 7245ML  GTAQUAR-TO138 5                                  20.72-0.21     8831000                                   
+ 7246ML  GPALMA2-TO138 5        42.39-2.81                112.4-10.2     8831000                                   
+ 7247ML  GPALMA3-TO138 5                                  18.98 7.58     8831000                                   
+ 7248ML  GPALMA4-TO138 5                                  30.5613.60     8831000                                   
+ 8041ML  IIZ.TO--MA069 5                                   0.0   0.0     8651043                                   
+ 7111ML  GPEIXEA-TO138 5                                  10.64-8.26      8831000                                   
+
+99999
+DBAR   
+ 7281ML  GARAGUA-TO138 5                                   6.99 3.43     8831000                                   
+ 7282ML  GNOLINDATO138 5                                  9.70 -0.53     8831000                                   
+ 7283ML  GMIRANO-TO138 5                                  14.05-2.68     8831000            
+45003AL  ISMIGUEL-TO69 5                                  19.43-1.81     8831000
+45004AL  ITOCANT-TO069 5                                  6.66  2.36     8831000
+45005AL  GN.ROSA-TO138 5                                  25.23-0.55     8831000
+45006AL  GGURUPI-TO138 5                                  62.91-28.5     8831000
+
+99999
+
+DLIN
+(De )d O d(Pa )NcEP ( R% )( X% )(Mvar)(Tap)(Tmn)(Tmx)(Phs)(Bc  )(Cn)(Ce)Ns(Cq)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10
+ 8041  A  45003 1 T 9.113615.6590.3405                           44. 55.   44.
+45003  A D45004 1    44.87 77.31 1.685                           44. 55.   44.
+7243   A  45005 1    4.00810.444 2.517                          101.127.  101.
+45005  A D45006 1   13.40535.112 8.515                          101.127.  101.
+7111   A  45006 1   8.876 25.799 6.237                          101.127.  101.
+ 7239  A  45004 1          17.88         1.                      60. 85.   60.                                
+
+99999
+FIM

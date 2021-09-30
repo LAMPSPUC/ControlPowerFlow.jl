@@ -1,0 +1,3 @@
+[submodule "parserpwf"]
+	path = parserpwf
+	url = ../../parserpwf.git
