@@ -31,9 +31,9 @@ function constraint_gen_reactive_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::
 end
 
 ""
-function constraint_model_voltage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_voltage_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
-    constraint_model_voltage(pm, nw, i, bus["vmax"], bus["vmin"])
+    constraint_voltage_bounds(pm, nw, i, bus["vmax"], bus["vmin"])
 end
 
 ""

@@ -1,5 +1,5 @@
 const slack_function = Dict(
-    "constraint_model_voltage"              => ("constraint_model_voltage",              "mod_volt",      :bus,       :bus),
+    "constraint_voltage_bounds"             => ("constraint_voltage_bounds",             "volt_bou",      :bus,       :bus),
     "constraint_theta_ref"                  => ("constraint_theta_ref",                  "th_ref",        :ref_buses, :bus),
     "constraint_voltage_magnitude_setpoint" => ("constraint_voltage_magnitude_setpoint", "volt_mag_set",  :bus,       :bus),
     "constraint_gen_setpoint_active"        => ("constraint_gen_setpoint_active",        "gen_set_act",   :gen,       :gen),
@@ -80,11 +80,10 @@ end
 
 ########### constraint ############
 
-function slack_in_equality_constraint!(
+function slack_in_equality_constraint(
     pm::_PM.AbstractPolarModels, n::Int, i::Int,
-    funct_name::String, con)
+    funct_name::String, slack)
     
-
     var_idxs = ref(pm, n, :slack, funct_name)
     if var_idxs == true || i in var_idxs
         var_nm = BrazilianPowerModels.slack_function[funct_name][2]
@@ -96,9 +95,21 @@ function slack_in_equality_constraint!(
     return 0.0
 end
 
-function slack_in_upper_constraint!(
+function slack_in_equality_constraint(
     pm::_PM.AbstractPolarModels, n::Int, i::Int,
-    funct_name::String, con)
+    funct_name::String)
+    slack = 0.0
+    
+    if haskey(ref(pm), :slack) && haskey(ref(pm, n, :slack), funct_name)
+        slack += slack_in_equality_constraint(pm, n, i, funct_name, slack)
+    end
+
+    return slack
+end
+
+function slack_in_upper_constraint(
+    pm::_PM.AbstractPolarModels, n::Int, i::Int,
+    funct_name::String, slack)
 
     var_idxs = ref(pm, n, :slack, funct_name)
     if var_idxs == true || i in var_idxs
@@ -110,9 +121,9 @@ function slack_in_upper_constraint!(
     return 0.0
 end
 
-function slack_in_lower_constraint!(
+function slack_in_lower_constraint(
     pm::_PM.AbstractPolarModels, n::Int, i::Int,
-    funct_name::String, con)
+    funct_name::String, slack)
 
     var_idxs = ref(pm, n, :slack, funct_name)
     if var_idxs == true || i in var_idxs
@@ -122,4 +133,19 @@ function slack_in_lower_constraint!(
         return var(pm, n, Symbol(neg_nm))[i]
     end
     return 0.0
+end
+
+function slack_in_bound_constraint(
+    pm::_PM.AbstractPolarModels, n::Int, i::Int,
+    funct_name::String)
+    
+    up  = 0.0
+    low = 0.0
+    
+    if haskey(ref(pm), :slack) && haskey(ref(pm, n, :slack), funct_name)
+        up  += slack_in_upper_constraint(pm, n, i, funct_name, up)
+        low += slack_in_lower_constraint(pm, n, i, funct_name, low)
+    end
+
+    return up, low
 end

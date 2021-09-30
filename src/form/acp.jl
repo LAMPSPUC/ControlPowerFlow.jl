@@ -17,13 +17,8 @@ function constraint_power_balance_active(pm::_PM.AbstractACPModel, n::Int, i::In
     # remove this.
     # nl_form = length(bus_arcs) > 0 && (typeof(p[iterate(bus_arcs)[1]]) <: JuMP.NonlinearExpression)
 
-    slack = 0.0
-    funct_name = "constraint_power_balance_active"
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_power_balance_active")
 
-    if haskey(ref(pm), :slack) && haskey(ref(pm, n, :slack), funct_name)
-        slack += slack_in_equality_constraint!(pm, n, i, funct_name, con)
-    end
-    
     cstr_p = JuMP.@NLconstraint(pm.model,
         sum(p[a] for a in bus_arcs)
         + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
@@ -61,13 +56,8 @@ function constraint_power_balance_reactive(pm::_PM.AbstractACPModel, n::Int, i::
     # remove this.
     # nl_form = length(bus_arcs) > 0 && (typeof(p[iterate(bus_arcs)[1]]) <: JuMP.NonlinearExpression)
 
-    slack = 0.0
-    funct_name = "constraint_power_balance_reactive"
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_power_balance_reactive")
 
-    if haskey(ref(pm), :slack) && haskey(ref(pm, n, :slack), funct_name)
-        slack += slack_in_equality_constraint!(pm, n, i, funct_name, con)
-    end
-    
     cstr_q = JuMP.@NLconstraint(pm.model,
         sum(q[a] for a in bus_arcs)
         + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
@@ -89,12 +79,7 @@ end
 function constraint_voltage_magnitude_setpoint(pm::_PM.AbstractACPModel, n::Int, i::Int, vm)
     v = var(pm, n, :vm, i)
 
-    slack = 0.0
-    funct_name = "constraint_voltage_magnitude_setpoint"
-    
-    if haskey(ref(pm), :slack) && haskey(ref(pm, n, :slack), funct_name)
-        slack += slack_in_equality_constraint!(pm, n, i, funct_name, con)
-    end
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_voltage_magnitude_setpoint")
 
     JuMP.@constraint(pm.model, v == vm + slack)
 end
