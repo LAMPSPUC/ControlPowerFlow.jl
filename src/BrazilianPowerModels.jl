@@ -1,13 +1,12 @@
 module BrazilianPowerModels
 
+include("../parserpwf/src/ParserPWF.jl")
 
 import JuMP
 import JuMP: @variable, @constraint, @NLconstraint, @objective, @NLobjective, @expression, @NLexpression
 
 import InfrastructureModels
 const _IM = InfrastructureModels
-
-import ParserPWF
 
 import PowerModels; const _PM = PowerModels
 import PowerModels: ids, ref, var, con, sol, nw_ids, nw_id_default
