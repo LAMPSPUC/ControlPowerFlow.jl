@@ -18,7 +18,7 @@ end
 
 function run_pf(file::String, model_type, optimizer, model_constructor::Function; kwargs...)
     network_data = ParserPWF.parse_pwf_to_powermodels(file)
-    return _PM.run_pf(network_data, model_type, optimizer, model_constructor; kwargs...)
+    return run_pf(network_data, model_type, optimizer, model_constructor; kwargs...)
 end
 
 function run_pf(network_data::Dict, model_type, optimizer, model_constructor::Function; kwargs...)
@@ -28,25 +28,31 @@ end
 function variable(pm::_PM.AbstractPowerModel)
     _PM.variable_bus_voltage(pm, bounded = false)
     _PM.variable_dcline_power(pm, bounded = false)
-    
     variable_gen_power(pm, bounded = false) 
-    variable_shunt(pm)
-    
-    if haskey(ref(pm), :slack)
-        variable_slack(pm)
-    end
+
+    has_control(pm) ? variable_control(pm) : nothing
+    has_slack(pm)   ? variable_slack(pm)   : nothing
+end
+
+function objective(pm::_PM.AbstractPowerModel, obj)
+    @objective(pm.model, Min, obj)
 end
 
 function objective(pm::_PM.AbstractPowerModel)
-    if haskey(ref(pm), :slack)
-        objective_slack(pm)
+    obj = 0.0
+    if haskey(ref(pm), :control)
+        obj += objective_control(pm)
     end
+    if haskey(ref(pm), :slack)
+        obj += objective_slack(pm)
+    end
+    objective(pm, obj)
 end
 
 function expression(pm::_PM.AbstractPowerModel)
     for i in ids(pm, :branch)
-        _PM.expression_branch_power_ohms_yt_from(pm, i)
-        _PM.expression_branch_power_ohms_yt_to(pm, i)
+        expression_branch_power_ohms_yt_from(pm, i)
+        expression_branch_power_ohms_yt_to(pm, i)
     end
 end
 
@@ -57,8 +63,11 @@ function constraint_ref_bus(pm::_PM.AbstractPowerModel)
         constraint_voltage_magnitude_setpoint(pm, i)
 
         # if multiple generators, fix power generation degeneracies
-        if length(ref(pm, :bus_gens, i)) > 1
-            for j in collect(ref(pm, :bus_gens, i))[2:end]
+        for (l, j) in enumerate(collect(ref(pm, :bus_gens, i)))
+            if l == 1 
+                has_control(pm, "gen_active")   ? constraint_gen_active_bounds(pm, j)   : nothing
+                has_control(pm, "gen_reactive") ? constraint_gen_reactive_bounds(pm, j) : nothing
+            else # powermodels allows more than one generator per bus
                 constraint_gen_setpoint_active(pm, j)
                 constraint_gen_setpoint_reactive(pm, j)
             end
@@ -73,31 +82,23 @@ function constraint_pv(pm::_PM.AbstractPowerModel, i::Int, bus::Dict)
      constraint_voltage_magnitude_setpoint(pm, controlled_bus(pm, i))
      for j in ref(pm, :bus_gens, i)
          constraint_gen_setpoint_active(pm, j)
-        #  constraint_gen_reactive_bounds(pm, j)
+         has_control(pm, "gen_reactive") ? constraint_gen_reactive_bounds(pm, j) : nothing
      end
 end
 
 function constraint_pq(pm::_PM.AbstractPowerModel, i::Int, bus::Dict)
     @assert bus["bus_type"] == 1
 
-    # constraint_voltage_bounds(pm, i)
-end
-
-function pv_bus(pm::_PM.AbstractPowerModel, i::Int)
-    return length(ref(pm, :bus_gens, i)) > 0 && !(i in ids(pm,:ref_buses))
-end
-
-function pq_bus(pm::_PM.AbstractPowerModel, i::Int)
-    return length(ref(pm, :bus_gens, i)) == 0 
+    has_control(pm, "voltage") ? constraint_voltage_bounds(pm, i) : nothing
 end
 
 function constraint_bus(pm::_PM.AbstractPowerModel)
     for (i,bus) in ref(pm, :bus)
         # Power balance constraints
         constraint_power_balance(pm, i)
-        
-        constraint_shunt(pm, i)
 
+        has_control(pm, "shunt") ? constraint_shunt(pm, i) : nothing
+        
         if pv_bus(pm, i)
             constraint_pv(pm, i, bus)
         elseif pq_bus(pm, i)
@@ -124,12 +125,26 @@ function constraint_dcline(pm::_PM.AbstractPowerModel)
     end
 end
 
+function constraint_branch(pm::_PM.AbstractPowerModel)
+    has_tap_ratio = has_control(pm, "tap")
+    has_shift     = has_control(pm, "shift")
+    
+    if has_tap_ratio || has_shift
+        for i in ids(pm, :branch)
+            has_tap_ratio ? constraint_tap_ratio(pm, i) : nothing
+            has_shift     ? constraint_tap_shift(pm, i) : nothing
+        end 
+    end
+end
+
 function constraint(pm::_PM.AbstractPowerModel)
     # Reference bus constraints
     constraint_ref_bus(pm)
     # Bus constraints
     constraint_bus(pm)
-    # DC line constraints
+    # Branch constraints
+    constraint_branch(pm)
+    # DC branch constraints
     constraint_dcline(pm)
 end
 

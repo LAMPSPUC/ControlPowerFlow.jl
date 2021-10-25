@@ -9,3 +9,10 @@ function unfix_shunt!(network_data::Dict)
         shunt["shunt_type"] = shunt["shunt_type_orig"]
     end
 end
+
+function calc_branch_t(tap_ratio, angle_shift)
+    tr = tap_ratio .* cos.(angle_shift)
+    ti = tap_ratio .* sin.(angle_shift)
+
+    return tr, ti
+end

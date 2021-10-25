@@ -83,3 +83,39 @@ function constraint_voltage_magnitude_setpoint(pm::_PM.AbstractACPModel, n::Int,
 
     JuMP.@constraint(pm.model, v == vm + slack)
 end
+
+""
+function expression_branch_power_ohms_yt_from(pm::_PM.AbstractACPModel, n::Int, f_bus, t_bus, f_idx, t_idx, g, b, g_fr, b_fr, i::Int)
+    vm_fr = var(pm, n, :vm, f_bus)
+    vm_to = var(pm, n, :vm, t_bus)
+    va_fr = var(pm, n, :va, f_bus)
+    va_to = var(pm, n, :va, t_bus)
+
+    tap   = ref_or_var(pm, n, i, "tap")
+    shift = ref_or_var(pm, n, i, "shift")
+    
+    # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
+    # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
+    tm² = tap^2 + 1e-5 # variable in denominator
+    
+    var(pm, n, :p)[f_idx] = JuMP.@NLexpression(pm.model,  (g+g_fr)/tm²*vm_fr^2 + (-g*(tap * cos(shift))+b*(tap * sin(shift)))/tm²*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*(tap * cos(shift))-g*(tap * sin(shift)))/tm²*(vm_fr*vm_to*sin(va_fr-va_to)) )
+    var(pm, n, :q)[f_idx] = JuMP.@NLexpression(pm.model, -(b+b_fr)/tm²*vm_fr^2 - (-b*(tap * cos(shift))-g*(tap * sin(shift)))/tm²*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*(tap * cos(shift))+b*(tap * sin(shift)))/tm²*(vm_fr*vm_to*sin(va_fr-va_to)) )
+end
+
+""
+function expression_branch_power_ohms_yt_to(pm::_PM.AbstractACPModel, n::Int, f_bus, t_bus, f_idx, t_idx, g, b, g_to, b_to, i::Int)
+    vm_fr = var(pm, n, :vm, f_bus)
+    vm_to = var(pm, n, :vm, t_bus)
+    va_fr = var(pm, n, :va, f_bus)
+    va_to = var(pm, n, :va, t_bus)
+
+    tap   = ref_or_var(pm, n, i, "tap")
+    shift = ref_or_var(pm, n, i, "shift")
+    
+    # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
+    # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
+    tm² = tap^2 + 1e-5
+
+    var(pm, n, :p)[t_idx] = JuMP.@NLexpression(pm.model,  (g+g_to)*vm_to^2 + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(vm_to*vm_fr*sin(va_to-va_fr)) )
+    var(pm, n, :q)[t_idx] = JuMP.@NLexpression(pm.model, -(b+b_to)*vm_to^2 - (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(vm_to*vm_fr*sin(va_to-va_fr)) )
+end

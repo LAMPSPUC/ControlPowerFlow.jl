@@ -22,13 +22,18 @@ include("core/base.jl")
 include("core/constraint.jl")
 include("core/constraint_template.jl")
 include("core/data.jl")
+include("core/expression_template.jl")
 include("core/objective.jl")
-include("core/slack.jl")
 include("core/variable.jl")
+
+include("core/slack.jl")
+include("core/control.jl")
 
 include("form/acp.jl")
 include("form/shared.jl")
 
 include("prob/pf.jl")
+
+include("util/visualization.jl")
 
 end # module

@@ -4,10 +4,13 @@ const slack_function = Dict(
     "constraint_voltage_magnitude_setpoint" => ("constraint_voltage_magnitude_setpoint", "volt_mag_set",  :bus,       :bus),
     "constraint_gen_setpoint_active"        => ("constraint_gen_setpoint_active",        "gen_set_act",   :gen,       :gen),
     "constraint_gen_setpoint_reactive"      => ("constraint_gen_setpoint_reactive",      "gen_set_rea",   :gen,       :gen),
+    "constraint_gen_active_bounds"          => ("constraint_gen_active_bounds",          "gen_act_bou",   :gen,       :gen),
     "constraint_gen_reactive_bounds"        => ("constraint_gen_reactive_bounds",        "gen_rea_bou",   :gen,       :gen),
     "constraint_power_balance_active"       => ("constraint_power_balance_active",       "pow_bal_act",   :bus,       :bus),
     "constraint_power_balance_reactive"     => ("constraint_power_balance_reactive",     "pow_bal_rea",   :bus,       :bus),
     "constraint_shunt"                      => ("constraint_shunt",                      "shunt",         :shunt,     :shunt),
+    "constraint_tap_ratio"                  => ("constraint_tap_ratio",                  "tap_rat",       :branch,    :branch),
+    "constraint_tap_shift"                  => ("constraint_tap_shift",                  "tap_shi",       :branch,    :branch),
     "constraint_dcline_setpoint_active_fr"  => ("constraint_dcline_setpoint_active_fr",  "dc_set_act_fr", :dcline,    :dcline),
     "constraint_dcline_setpoint_active_to"  => ("constraint_dcline_setpoint_active_to",  "dc_set_act_to", :dcline,    :dcline),
 )
@@ -37,6 +40,10 @@ function handle_slack_indexes(pm, nw, element, funct)
         end
     end
     return final_ids
+end
+
+function has_slack(pm::_PM.AbstractPowerModel)
+    return haskey(ref(pm), :slack)
 end
 
 ########### variables ###########
@@ -72,7 +79,7 @@ function variable_slack(
             args = slack_function[funct_name]
             variable_slack(pm, nw, bounded, report, args[1], args[2], args[3], args[4])
         else
-            @warn("There is no constraint called $s_key to create slack variables")
+            @warn("There is no constraint called $funct_name to create slack variables")
         end
     end
 

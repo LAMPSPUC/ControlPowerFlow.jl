@@ -14,7 +14,11 @@ function objective_slack(pm::_PM.AbstractPowerModel)
         end
     end
 
-    JuMP.@objective(pm.model, Min,
-        obj
-    )
+    return obj
+end
+
+function objective_control(pm::_PM.AbstractPowerModel)
+    obj = 0.0
+
+    return obj
 end
