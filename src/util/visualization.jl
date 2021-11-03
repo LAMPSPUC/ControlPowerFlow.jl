@@ -192,10 +192,10 @@ function handle_shunt(dict, dbsh_shunts, dcer_shunts)
         if dict["shunt"][k]["status"] == 1
             status = "on"
             binit += dict["shunt"][k]["bs"]
-            if dict["shunt"][k]["shunt_type_orig"] == 2 && mode == "fixed"
+            if dict["shunt"][k]["shunt_type"] == 2 && mode == "fixed"
                 mode = "discrete"
             end
-            if dict["shunt"][k]["shunt_type_orig"] == 3 && mode in ["fixed","discrete"]
+            if dict["shunt"][k]["shunt_type"] == 3 && mode in ["fixed","discrete"]
                 mode = "continuos"
             end 
         end

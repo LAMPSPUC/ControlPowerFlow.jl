@@ -11,6 +11,8 @@ const _IM = InfrastructureModels
 import PowerModels; const _PM = PowerModels
 import PowerModels: ids, ref, var, con, sol, nw_ids, nw_id_default
 
+import ParserPWF: bus_type_num_to_str, bus_type_num_to_str, element_status
+
 function silence()
     Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
     Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
@@ -26,8 +28,13 @@ include("core/expression_template.jl")
 include("core/objective.jl")
 include("core/variable.jl")
 
-include("core/slack.jl")
-include("core/control.jl")
+include("control/slack.jl")
+include("control/control.jl")
+include("control/control_info.jl")
+include("control/control_actions.jl")
+include("control/control_variables.jl")
+include("control/control_constraints.jl")
+include("control/slack_variables.jl")
 
 include("form/acp.jl")
 include("form/shared.jl")

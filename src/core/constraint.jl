@@ -1,15 +1,37 @@
 "`pf[i] == pf"
 function constraint_dcline_setpoint_active_fr(pm::_PM.AbstractPowerModel, n::Int, f_idx, t_idx, pf, pt)
     p_fr = var(pm, n, :p_dc, f_idx)
-    #ToDo add slacks
-    JuMP.@constraint(pm.model, p_fr == pf)
+    
+    slack = slack_in_equality_constraint(pm, n, f_idx, "constraint_dcline_setpoint_active_fr")
+
+    JuMP.@constraint(pm.model, p_fr == pf + slack)
 end
 
 "`pt[i] == pt"
 function constraint_dcline_setpoint_active_to(pm::_PM.AbstractPowerModel, n::Int, f_idx, t_idx, pf, pt)
     p_to = var(pm, n, :p_dc, t_idx)
-    #ToDo add slacks
-    JuMP.@constraint(pm.model, p_to == pt)
+    
+    slack = slack_in_equality_constraint(pm, n, t_idx, "constraint_dcline_setpoint_active_to")
+
+    JuMP.@constraint(pm.model, p_to == pt + slack)
+end
+
+"`pd[i] == pd`"
+function constraint_load_setpoint_active(pm::_PM.AbstractPowerModel, n::Int, i, pd)
+    pd_var = var(pm, n, :pd, i)
+    
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_load_setpoint_active")
+
+    JuMP.@constraint(pm.model, pd_var == pd + slack)
+end
+
+"`qd[i] == qd`"
+function constraint_load_setpoint_reactive(pm::_PM.AbstractPowerModel, n::Int, i, qd)
+    qd_var = var(pm, n, :qd, i)
+    
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_load_setpoint_reactive")
+    
+    JuMP.@constraint(pm.model, qd_var == qd + slack)
 end
 
 "`pg[i] == pg`"
@@ -21,7 +43,7 @@ function constraint_gen_setpoint_active(pm::_PM.AbstractPowerModel, n::Int, i, p
     JuMP.@constraint(pm.model, pg_var == pg + slack)
 end
 
-"`qq[i] == qq`"
+"`qg[i] == qg`"
 function constraint_gen_setpoint_reactive(pm::_PM.AbstractPowerModel, n::Int, i, qg)
     qg_var = var(pm, n, :qg, i)
     
@@ -50,6 +72,23 @@ function constraint_gen_active_bounds(pm::_PM.AbstractPowerModel, n::Int, i, pma
     JuMP.@constraint(pm.model, pg >= pmin - low)
 end
 
+"`p[f_idx] == p`"
+function constraint_active_power_setpoint(pm::_PM.AbstractPowerModel, n::Int, i::Int, f_idx, p)
+    p_var = var(pm, n, :p)[f_idx]
+    
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_active_power_setpoint")
+    
+    JuMP.@NLconstraint(pm.model, p_var == p + slack)
+end
+
+"`q[f_idx] == q`"
+function constraint_reactive_power_setpoint(pm::_PM.AbstractPowerModel, n::Int, i::Int, f_idx, q)
+    q_var = var(pm, n, :q)[f_idx]
+    
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_reactive_power_setpoint")
+    
+    JuMP.@NLconstraint(pm.model, q_var == q + slack)
+end
 
 ""
 function constraint_tap_ratio(pm::_PM.AbstractPowerModel,  n::Int, i::Int, branch::Dict)
@@ -99,10 +138,10 @@ function constraint_voltage_bounds(pm::_PM.AbstractPowerModel, n::Int, i::Int, v
 end
 
 ""
-function constraint_fixed_shunt(pm::_PM.AbstractPowerModel, n::Int, i::Int, shunt::Dict)
+function constraint_shunt_setpoint(pm::_PM.AbstractPowerModel, n::Int, i::Int, shunt::Dict)
     bs = var(pm, n)[:bs][i]
    
-    slack = slack_in_equality_constraint(pm, n, i, "constraint_shunt")
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_shunt_setpoint")
     
     JuMP.@constraint(
         pm.model, 
@@ -111,10 +150,10 @@ function constraint_fixed_shunt(pm::_PM.AbstractPowerModel, n::Int, i::Int, shun
 end
 
 ""
-function constraint_variable_shunt(pm::_PM.AbstractPowerModel,  n::Int, i::Int, shunt::Dict)
+function constraint_shunt_bounds(pm::_PM.AbstractPowerModel,  n::Int, i::Int, shunt::Dict)
     bs = var(pm, n)[:bs][i]
 
-    up, low = slack_in_bound_constraint(pm, n, i, "constraint_shunt")
+    up, low = slack_in_bound_constraint(pm, n, i, "constraint_shunt_bounds")
 
     JuMP.@constraint(
         pm.model, bs >= shunt["bsmin"] - low

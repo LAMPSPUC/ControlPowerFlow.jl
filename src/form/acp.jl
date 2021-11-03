@@ -91,8 +91,8 @@ function expression_branch_power_ohms_yt_from(pm::_PM.AbstractACPModel, n::Int, 
     va_fr = var(pm, n, :va, f_bus)
     va_to = var(pm, n, :va, t_bus)
 
-    tap   = ref_or_var(pm, n, i, "tap")
-    shift = ref_or_var(pm, n, i, "shift")
+    tap   = ref_or_var(pm, n, i, :branch, "tap")
+    shift = ref_or_var(pm, n, i,  :branch, "shift")
     
     # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
@@ -109,8 +109,8 @@ function expression_branch_power_ohms_yt_to(pm::_PM.AbstractACPModel, n::Int, f_
     va_fr = var(pm, n, :va, f_bus)
     va_to = var(pm, n, :va, t_bus)
 
-    tap   = ref_or_var(pm, n, i, "tap")
-    shift = ref_or_var(pm, n, i, "shift")
+    tap   = ref_or_var(pm, n, i, :branch, "tap")
+    shift = ref_or_var(pm, n, i, :branch, "shift")
     
     # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
