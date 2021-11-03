@@ -331,20 +331,20 @@ DGLT
 99999
 DARE
 (Ar    (Xchg)     (      Identificacao da area       ) (Xmin) (Xmax)
-  1        0.                   NÍVEL DE TENSÃO 138 kV               
-  2        0.                    NÍVEL DE TENSÃO 69 kV               
+  1        0.                   Nï¿½VEL DE TENSï¿½O 138 kV               
+  2        0.                    Nï¿½VEL DE TENSï¿½O 69 kV               
   3        0.                        TRAFOS 69/11,4 kV               
-  4        0.                  NÍVEL DE TENSÃO 34,5 kV               
+  4        0.                  Nï¿½VEL DE TENSï¿½O 34,5 kV               
   6        0.                  CARGA VOTORANTIN 138 KV               
   7        0.                          CARGA CIC 69 KV               
   9        0.                     CARGA SAMARCO 138 KV               
- 10        0.                            GERAÇÃO 69 kV               
- 11        0.                        INTERCÂMBIO LIGHT               
- 12        0.                        INTERCÂMBIO CEMIG               
- 13        0.                    INTERCÂMBIO ENF 69 kV               
- 14        0.                           GERAÇÃO 138 kV               
+ 10        0.                            GERAï¿½ï¿½O 69 kV               
+ 11        0.                        INTERCï¿½MBIO LIGHT               
+ 12        0.                        INTERCï¿½MBIO CEMIG               
+ 13        0.                    INTERCï¿½MBIO ENF 69 kV               
+ 14        0.                           GERAï¿½ï¿½O 138 kV               
  19        0.                         TRAFOS 138/69 kV               
- 21        0.                  INTERCÂMBIO RB - 345 kV               
+ 21        0.                  INTERCï¿½MBIO RB - 345 kV               
  22        0.                       TRAFOS 138/11,4 kV               
  35        0.                     CARGA ENF 69/11,4 kV               
 99999
