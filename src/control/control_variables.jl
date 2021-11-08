@@ -21,7 +21,7 @@ end
 function create_control_variables(
     pm::_PM.AbstractPowerModel, nw::Int, report::Bool, 
     control_name::String, var_name::String, el_sym::Symbol, start_val::Float64)
-    @show control_name
+
     control_ids = ref(pm, nw, :control_info, :control_variables)[control_name]["indexes"]
 
     if !isempty(control_ids)

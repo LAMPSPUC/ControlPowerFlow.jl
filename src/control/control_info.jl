@@ -37,7 +37,7 @@ const vlim_info = Dict{Any, Any}(
     ),
     "control_constraints" => Dict(
         1 => Dict(
-            "constraint" => "constraint_voltage_bounds",
+            "constraint" => "constraint_voltage_magnitude_bounds",
             "element" => :bus,
             "filters" => [
                 (bus, nw_ref) -> bus["bus_type"] == 1,
@@ -91,7 +91,7 @@ const csca_info = Dict{Any, Any}(
             ]
         ),
         2 => Dict(
-            "constraint" => "constraint_voltage_bounds",
+            "constraint" => "constraint_voltage_magnitude_bounds",
             "element" => :bus,
             "filters" => [
                 (bus, nw_ref) -> is_controlled_by_shunt(nw_ref, bus),
@@ -101,7 +101,7 @@ const csca_info = Dict{Any, Any}(
     ),
     "slack_variables" => Dict(
         1 => Dict(
-            "constraint" => "constraint_voltage_bounds",
+            "constraint" => "constraint_voltage_magnitude_bounds",
             "element" => :bus,
             "variable" => "con_vol_bou",
             "filters" => [

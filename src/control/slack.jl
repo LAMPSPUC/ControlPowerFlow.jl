@@ -5,8 +5,9 @@
 # constraint type
 
 const slack_info_default = Dict(
-    "constraint_voltage_bounds"             => ("constraint_voltage_bounds",             "volt_bou",     1.0,  :bus,    :bound),
     "constraint_theta_ref"                  => ("constraint_theta_ref",                  "th_ref",       1.0,  :bus,    :equalto),
+    "constraint_voltage_magnitude_bounds"   => ("constraint_voltage_magnitude_bounds",   "volt_mag_bou", 1.0,  :bus,    :bound),
+    "constraint_voltage_angle_bounds"       => ("constraint_voltage_angle_bounds",       "volt_ang_bou", 1.0,  :bus,    :bound),
     "constraint_voltage_magnitude_setpoint" => ("constraint_voltage_magnitude_setpoint", "volt_mag_set", 1.0,  :bus,    :equalto),
     "constraint_gen_setpoint_active"        => ("constraint_gen_setpoint_active",        "gen_set_act",  1.0,  :gen,    :equalto),
     "constraint_gen_setpoint_reactive"      => ("constraint_gen_setpoint_reactive",      "gen_set_rea",  1.0,  :gen,    :equalto),
