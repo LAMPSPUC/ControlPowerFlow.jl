@@ -2,14 +2,14 @@
 using PowerModels, Ipopt, JuMP
 using ParserPWF
 
-# Include BrazilianPowerModels module
-include("src/BrazilianPowerModels.jl")
+# Include ControlPowerFlow module
+include("src/ControlPowerFlow.jl")
 
 # PWF system file
 file = "scripts\\data\\pwf\\3busfrank.pwf"
 
 # Reading PWF and converting to PowerModels network data dictionary
-network = BrazilianPowerModels.ParserPWF.parse_pwf_to_powermodels(file)
+network = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
 
 
 network_pwf = deepcopy(network)
@@ -30,15 +30,15 @@ slack = Dict(
     )
 )
 
-BrazilianPowerModels._PM.update_data!(network_pwf, slack)
+ControlPowerFlow._PM.update_data!(network_pwf, slack)
 network_pwf["slack"]
 
 solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-8)
-include("src/BrazilianPowerModels.jl")
-pm = BrazilianPowerModels._PM.instantiate_model(network_pwf, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+include("src/ControlPowerFlow.jl")
+pm = ControlPowerFlow._PM.instantiate_model(network_pwf, ACPPowerModel, ControlPowerFlow.build_br_pf);
 print(pm.model)
 
-result = BrazilianPowerModels.run_br_pf(network_pwf, solver);
+result = ControlPowerFlow.run_br_pf(network_pwf, solver);
 
 result["solution"]["bus"]["1"]
 

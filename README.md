@@ -1,3 +1,3 @@
-# BrazilianPowerModels.jl
+# ControlPowerFlow.jl
 
-Adaptation of PowerModels.jl for Energisa MUST II
+Adaptation of PowerModels.jl for classical Brazilian control actions in power flow analysis

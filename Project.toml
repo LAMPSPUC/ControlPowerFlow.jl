@@ -1,4 +1,4 @@
-name = "BrazilianPowerModels"
+name = "ControlPowerFlow"
 uuid = "437be1c9-48e7-4aae-afd3-8e19dd3ac5b9"
 authors = ["Iago Chavarry <iagochavarry@lampsco.com>"]
 version = "0.1.0"

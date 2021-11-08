@@ -16,16 +16,16 @@ function create_slack_variables_bound(
     if !isempty(slack_ids)
         slack_pos = var(pm, nw)[Symbol(pos_nm)] = JuMP.@variable(pm.model,
             [i in slack_ids], base_name="$(nw)_"*pos_nm,
-            start = BrazilianPowerModels._PM.comp_start_value(ref(pm, nw, el_sym, i), pos_nm*"_start")
+            start = ControlPowerFlow._PM.comp_start_value(ref(pm, nw, el_sym, i), pos_nm*"_start")
         )
         
         slack_neg = var(pm, nw)[Symbol(neg_nm)] = JuMP.@variable(pm.model,
             [i in slack_ids], base_name="$(nw)_"*neg_nm,
-            start = BrazilianPowerModels._PM.comp_start_value(ref(pm, nw, el_sym, i), neg_nm*"_start")
+            start = ControlPowerFlow._PM.comp_start_value(ref(pm, nw, el_sym, i), neg_nm*"_start")
         )
 
-        report && BrazilianPowerModels._PM.sol_component_value(pm, nw, el_sym, Symbol(pos_nm), slack_ids, slack_pos)
-        report && BrazilianPowerModels._PM.sol_component_value(pm, nw, el_sym, Symbol(neg_nm), slack_ids, slack_neg)
+        report && ControlPowerFlow._PM.sol_component_value(pm, nw, el_sym, Symbol(pos_nm), slack_ids, slack_pos)
+        report && ControlPowerFlow._PM.sol_component_value(pm, nw, el_sym, Symbol(neg_nm), slack_ids, slack_neg)
     end
 end
 
@@ -40,10 +40,10 @@ function create_slack_variables_equalto(
     if !isempty(slack_ids)
         slack = var(pm, nw)[Symbol(eq_to_nm)] = JuMP.@variable(pm.model,
             [i in slack_ids], base_name="$(nw)_"*eq_to_nm,
-            start = BrazilianPowerModels._PM.comp_start_value(ref(pm, nw, el_sym, i), eq_to_nm*"_start")
+            start = ControlPowerFlow._PM.comp_start_value(ref(pm, nw, el_sym, i), eq_to_nm*"_start")
         )
 
-        report && BrazilianPowerModels._PM.sol_component_value(pm, nw, el_sym, Symbol(eq_to_nm), slack_ids, slack)
+        report && ControlPowerFlow._PM.sol_component_value(pm, nw, el_sym, Symbol(eq_to_nm), slack_ids, slack)
     end
 end
 

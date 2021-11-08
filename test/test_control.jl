@@ -2,7 +2,7 @@
     ε = 1e-5
     file = joinpath(@__DIR__, "test/data/3busfrank.pwf")
     # file = joinpath(@__DIR__, "data/3busfrank.pwf")
-    network = BrazilianPowerModels.ParserPWF.parse_pwf_to_powermodels(file)
+    network = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
     network["shunt"]["1"]
 
     control = Dict(
@@ -17,10 +17,10 @@
     )
 
     update_data!(network, control)
-    pm = BrazilianPowerModels._PM.instantiate_model(network, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+    pm = ControlPowerFlow._PM.instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
     solver = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     set_optimizer(pm.model, solver)
-    result = BrazilianPowerModels._PM.optimize_model!(pm)
+    result = ControlPowerFlow._PM.optimize_model!(pm)
 
     # no new control variables created
     @test !any(occursin.("bs", String.(keys(var(pm)))))
@@ -45,7 +45,7 @@
 
     file = joinpath(@__DIR__, "test/data/3busfrank_var_shunt.pwf")
     # file = joinpath(@__DIR__, "data/3busfrank_var_shunt.pwf")
-    network = BrazilianPowerModels.ParserPWF.parse_pwf_to_powermodels(file)
+    network = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
     network["shunt"]
     control = Dict(
         "control"=> Dict{String, Any}(
@@ -54,10 +54,10 @@
     )
 
     update_data!(network, control)
-    pm = BrazilianPowerModels._PM.instantiate_model(network, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+    pm = ControlPowerFlow._PM.instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
     solver = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     set_optimizer(pm.model, solver)
-    result = BrazilianPowerModels._PM.optimize_model!(pm)
+    result = ControlPowerFlow._PM.optimize_model!(pm)
 
     # shunt control variables created
     @test any(occursin.("bs", String.(keys(var(pm)))))
@@ -85,7 +85,7 @@
     
     file = joinpath(@__DIR__, "test/data/3busfrank_var_shunt.pwf")
     # file = joinpath(@__DIR__, "data/3busfrank_var_shunt.pwf")
-    network = BrazilianPowerModels.ParserPWF.parse_pwf_to_powermodels(file)
+    network = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
     network["shunt"]
     control = Dict(
         "control"=> Dict{String, Any}(
@@ -100,10 +100,10 @@
 
 
     update_data!(network, control)
-    pm = BrazilianPowerModels._PM.instantiate_model(network, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+    pm = ControlPowerFlow._PM.instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
     solver = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     set_optimizer(pm.model, solver)
-    result = BrazilianPowerModels._PM.optimize_model!(pm)
+    result = ControlPowerFlow._PM.optimize_model!(pm)
 
     # shunt control variables created
     @test any(occursin.("bs", String.(keys(var(pm)))))
@@ -131,7 +131,7 @@
 
     file = joinpath(@__DIR__, "test/data/3busfrank_var_shunt.pwf")
     # file = joinpath(@__DIR__, "data/3busfrank_var_shunt.pwf")
-    network = BrazilianPowerModels.ParserPWF.parse_pwf_to_powermodels(file)
+    network = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
 
     control = Dict(
         "control"=> Dict{String, Any}(
@@ -145,10 +145,10 @@
     )
 
     update_data!(network, control)
-    pm = BrazilianPowerModels._PM.instantiate_model(network, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+    pm = ControlPowerFlow._PM.instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
     solver = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     set_optimizer(pm.model, solver)
-    result = BrazilianPowerModels._PM.optimize_model!(pm)
+    result = ControlPowerFlow._PM.optimize_model!(pm)
 
     # verify decision control variables
 

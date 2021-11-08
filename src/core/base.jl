@@ -10,7 +10,7 @@ pq_bus(pm::_PM.AbstractPowerModel, i::Int) = length(ref(pm, :bus_gens, i)) == 0
 
 controlled_bus(pm::_PM.AbstractPowerModel, i::Int) = _PM.ref(pm, :bus, i, "voltage_controlled_bus")
 
-function elements_from_bus(pm::BrazilianPowerModels._PM.AbstractPowerModel, 
+function elements_from_bus(pm::ControlPowerFlow._PM.AbstractPowerModel, 
                           element::Symbol, bus::Int, nw::Int; 
                           filters::Vector = [])
 

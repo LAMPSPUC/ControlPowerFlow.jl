@@ -27,7 +27,7 @@ function create_control_variables(
     if !isempty(control_ids)
         control = var(pm, nw)[Symbol(var_name)] = JuMP.@variable(pm.model,
             [i in control_ids], base_name="$(nw)_"*var_name,
-            start = BrazilianPowerModels._PM.comp_start_value(ref(pm, nw, el_sym, i), var_name*"_start", start_val) 
+            start = ControlPowerFlow._PM.comp_start_value(ref(pm, nw, el_sym, i), var_name*"_start", start_val) 
         )
         
         report && _PM.sol_component_value(pm, nw, el_sym, Symbol(var_name), control_ids, control)

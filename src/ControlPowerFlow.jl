@@ -1,4 +1,4 @@
-module BrazilianPowerModels
+module ControlPowerFlow
 
 include("../parserpwf/src/ParserPWF.jl")
 

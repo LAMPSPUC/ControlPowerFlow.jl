@@ -2,7 +2,7 @@
     tolerance = 1e-5
 
     file = joinpath(@__DIR__, "data/3busfrank.pwf")
-    network = BrazilianPowerModels.ParserPWF.parse_pwf_to_powermodels(file)
+    network = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
 
     slack_constraints = Dict(
         "slack" => Dict(
@@ -10,10 +10,10 @@
     )
 
     update_data!(network, slack_constraints)
-    pm = BrazilianPowerModels._PM.instantiate_model(network, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+    pm = ControlPowerFlow._PM.instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
     solver = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     set_optimizer(pm.model, solver)
-    result = BrazilianPowerModels._PM.optimize_model!(pm)
+    result = ControlPowerFlow._PM.optimize_model!(pm)
 
     
     # no slack variables created
@@ -44,12 +44,12 @@
         )
     )
 
-    BrazilianPowerModels._PM.update_data!(network, slack_constraints)
+    ControlPowerFlow._PM.update_data!(network, slack_constraints)
 
-    pm = BrazilianPowerModels._PM.instantiate_model(network, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+    pm = ControlPowerFlow._PM.instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
     solver = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     set_optimizer(pm.model, solver)
-    result = BrazilianPowerModels._PM.optimize_model!(pm)
+    result = ControlPowerFlow._PM.optimize_model!(pm)
 
     # check slack variables creation
     @test any(occursin.("sl_", String.(keys(var(pm)))))
@@ -97,12 +97,12 @@
         )
     )
 
-    BrazilianPowerModels._PM.update_data!(network, slack_constraints)
+    ControlPowerFlow._PM.update_data!(network, slack_constraints)
 
-    pm = BrazilianPowerModels._PM.instantiate_model(network, ACPPowerModel, BrazilianPowerModels.build_br_pf);
+    pm = ControlPowerFlow._PM.instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
     solver = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     set_optimizer(pm.model, solver)
-    result = BrazilianPowerModels._PM.optimize_model!(pm)
+    result = ControlPowerFlow._PM.optimize_model!(pm)
 
     # check slack variables creation
     @test any(occursin.("sl_", String.(keys(var(pm)))))

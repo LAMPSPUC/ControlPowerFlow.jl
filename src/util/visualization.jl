@@ -216,8 +216,8 @@ function print_shunts(dict; len = 11)
     println(fit_results(header, len))
     
     for k in get_ordered_dict(dict["bus"])
-        dcer_shunts = BrazilianPowerModels.find_keys_shunt_from_bus(dict, parse(Int, k); section = "DCER")
-        dbsh_shunts = BrazilianPowerModels.find_keys_shunt_from_bus(dict, parse(Int, k); section = "DBSH")
+        dcer_shunts = ControlPowerFlow.find_keys_shunt_from_bus(dict, parse(Int, k); section = "DCER")
+        dbsh_shunts = ControlPowerFlow.find_keys_shunt_from_bus(dict, parse(Int, k); section = "DBSH")
         if !(isempty(dcer_shunts) && isempty(dbsh_shunts))
             mode, binit, status = handle_shunt(dict, dbsh_shunts, dcer_shunts)
         
