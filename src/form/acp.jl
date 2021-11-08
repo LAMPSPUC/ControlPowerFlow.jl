@@ -84,6 +84,15 @@ function constraint_voltage_magnitude_setpoint(pm::_PM.AbstractACPModel, n::Int,
     JuMP.@constraint(pm.model, v == vm + slack)
 end
 
+"`v[i] == vm`"
+function constraint_voltage_angle_setpoint(pm::_PM.AbstractACPModel, n::Int, i::Int, va)
+    v = var(pm, n, :va, i)
+
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_voltage_angle_setpoint")
+
+    JuMP.@constraint(pm.model, v == va + slack)
+end
+
 ""
 function expression_branch_power_ohms_yt_from(pm::_PM.AbstractACPModel, n::Int, f_bus, t_bus, f_idx, t_idx, g, b, g_fr, b_fr, i::Int)
     vm_fr = var(pm, n, :vm, f_bus)

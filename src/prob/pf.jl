@@ -136,9 +136,11 @@ end
 
 function control_constraints(pm::_PM.AbstractPowerModel)
     # bus constraints
-    for b in ctr_ids(pm, "constraint_theta_ref")      constraint_theta_ref(pm, b)      end
-    for b in ctr_ids(pm, "constraint_voltage_bounds") constraint_voltage_bounds(pm, b) end
+    for b in ctr_ids(pm, "constraint_theta_ref")                constraint_theta_ref(pm, b)                end
+    for b in ctr_ids(pm, "constraint_voltage_magnitude_bounds") constraint_voltage_magnitude_bounds(pm, b) end
+    for b in ctr_ids(pm, "constraint_voltage_angle_bounds")     constraint_voltage_angle_bounds(pm, b)     end
     for b in ctr_ids(pm, "constraint_voltage_magnitude_setpoint") constraint_voltage_magnitude_setpoint(pm,  controlled_bus(pm, b, "voltage_controlled_bus", "bus_i")) end
+    for b in ctr_ids(pm, "constraint_voltage_angle_setpoint")   constraint_voltage_angle_setpoint(pm,  b) end
 
     # load constraints
     for d in ctr_ids(pm, "constraint_load_setpoint_active")   constraint_load_setpoint_active(pm, d)   end

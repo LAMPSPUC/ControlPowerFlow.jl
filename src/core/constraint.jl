@@ -123,10 +123,10 @@ function constraint_tap_shift(pm::_PM.AbstractPowerModel,  n::Int, i::Int, branc
 end
 
 ""
-function constraint_voltage_bounds(pm::_PM.AbstractPowerModel, n::Int, i::Int, vmax::Float64, vmin::Float64)
+function constraint_voltage_magnitude_bounds(pm::_PM.AbstractPowerModel, n::Int, i::Int, vmax::Float64, vmin::Float64)
     vm = var(pm, n)[:vm][i]
 
-    up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_bounds")
+    up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_magnitude_bounds")
 
     JuMP.@constraint(
         pm.model, vm >= vmin - low
@@ -134,6 +134,21 @@ function constraint_voltage_bounds(pm::_PM.AbstractPowerModel, n::Int, i::Int, v
 
     JuMP.@constraint(
         pm.model, vm <= vmax + up
+    )
+end
+
+""
+function constraint_voltage_angle_bounds(pm::_PM.AbstractPowerModel, n::Int, i::Int, vamax::Float64, vamin::Float64)
+    va = var(pm, n)[:va][i]
+
+    up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_angle_bounds")
+
+    JuMP.@constraint(
+        pm.model, va >= vamin - low
+    )
+
+    JuMP.@constraint(
+        pm.model, va <= vamax + up
     )
 end
 

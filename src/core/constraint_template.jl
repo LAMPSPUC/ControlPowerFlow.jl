@@ -11,9 +11,21 @@ function constraint_voltage_magnitude_setpoint(pm::_PM.AbstractPowerModel, i::In
 end
 
 ""
-function constraint_voltage_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_voltage_angle_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
-    constraint_voltage_bounds(pm, nw, i, bus["vmax"], bus["vmin"])
+    constraint_voltage_angle_setpoint(pm, nw, bus["index"], bus["va"])
+end
+
+""
+function constraint_voltage_magnitude_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    bus = ref(pm, nw, :bus, i)
+    constraint_voltage_magnitude_bounds(pm, nw, i, bus["vmax"], bus["vmin"])
+end
+
+""
+function constraint_voltage_angle_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    bus = ref(pm, nw, :bus, i)
+    constraint_voltage_angle_bounds(pm, nw, i, bus["vamax"], bus["vamin"])
 end
 
 ""
