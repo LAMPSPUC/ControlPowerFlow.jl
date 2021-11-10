@@ -9,7 +9,7 @@ import InfrastructureModels
 const _IM = InfrastructureModels
 
 import PowerModels; const _PM = PowerModels
-import PowerModels: ids, ref, var, con, sol, nw_ids, nw_id_default
+import PowerModels: ids, ref, var, con, sol, nw_ids, nw_id_default, pm_component_status
 
 import ParserPWF: bus_type_num_to_str, bus_type_num_to_str, element_status
 
@@ -30,11 +30,23 @@ include("core/variable.jl")
 
 include("control/slack.jl")
 include("control/control.jl")
-include("control/control_info.jl")
-include("control/control_actions.jl")
-include("control/control_variables.jl")
-include("control/control_constraints.jl")
-include("control/slack_variables.jl")
+include("control/control_data.jl")
+include("control/actions.jl")
+include("control/variables.jl")
+include("control/constraints.jl")
+include("control/slack.jl")
+
+# including defaults control actions
+
+# Brazilian ANAREDE control actions
+include("control/anarede/qlim.jl")
+include("control/anarede/vlim.jl")
+include("control/anarede/ctap.jl")
+include("control/anarede/ctaf.jl")
+include("control/anarede/csca.jl")
+include("control/anarede/cphs.jl")
+
+#
 
 include("form/acp.jl")
 include("form/shared.jl")

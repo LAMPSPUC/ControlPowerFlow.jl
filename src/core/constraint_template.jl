@@ -94,10 +94,13 @@ function constraint_active_power_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw
     branch = ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
-    p = branch["p"]
+    
+    controlled_bus = _control_data(branch)["controlled_bus"]
+    b_idx = controlled_bus == f_bus ? (i, f_bus, t_bus) : (i, t_bus, f_bus)
 
-    constraint_active_power_setpoint(pm, nw, i, f_idx, p)
+    p = _control_data(branch)["p"]
+
+    constraint_active_power_setpoint(pm, nw, i, b_idx, p)
 end
 
 ""
@@ -105,31 +108,34 @@ function constraint_reactive_power_setpoint(pm::_PM.AbstractPowerModel, i::Int; 
     branch = ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
-    f_idx = (i, f_bus, t_bus)
-    q = branch["q"]
+    
+    controlled_bus = _control_data(branch)["controlled_bus"]
+    b_idx = controlled_bus == f_bus ? (i, f_bus, t_bus) : (i, t_bus, f_bus)
 
-    constraint_active_power_setpoint(pm, nw, i, f_idx, q)
+    q = _control_data(branch)["q"]
+
+    constraint_active_power_setpoint(pm, nw, i, b_idx, q)
 end
 
 
 ""
-function constraint_tap_ratio(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_tap_ratio_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, i)
-    constraint_tap_ratio(pm, nw, i, branch)
+    constraint_tap_ratio_bounds(pm, nw, i, branch)
 end
 
 ""
-function constraint_tap_shift(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_shift_ratio_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, i)
-    constraint_tap_shift(pm, nw, i, branch)
+    constraint_shift_ratio_bounds(pm, nw, i, branch)
 end
 
 ""
 function constraint_shunt(pm::_PM.AbstractPowerModel, s::Int; nw::Int=nw_id_default)
     shunt = ref(pm, :shunt, s)
-    if shunt["shunt_type"] == 1 # fixed
+    if _control_data(shunt)["shunt_type"] == 1 # fixed
         constraint_shunt_setpoint(pm, nw, s, shunt)
-    elseif shunt["shunt_type"] == 2 # variable
+    elseif _control_data(shunt)["shunt_type"] == 2 # variable
         constraint_shunt_bounds(pm, nw, s, shunt)
     end
 end

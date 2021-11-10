@@ -5,7 +5,7 @@ using ParserPWF
 # Include ControlPF module
 include("src/ControlPowerFlow.jl")
 
-ipopt = optimizer_with_attributes(Ipopt.Optimizer, "tol"=>0.1)
+ipopt = optimizer_with_attributes(Ipopt.Optimizer, "tol"=>0.00001)
 
 # PWF system file
 file = "scripts\\data\\pwf\\3busfrank.pwf"
@@ -13,8 +13,36 @@ file = "scripts\\data\\pwf\\3busfrank.pwf"
 data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; software = ControlPowerFlow.ParserPWF.Organon)
 network = deepcopy(data)
 
-network["bus"]["2"]["vamin"] = network["bus"]["2"]["va"]
-network["bus"]["2"]["vamax"] = network["bus"]["2"]["va"]
+network["shunt"]["1"]["control_data"] = network["shunt"]["1"]["control_info"]
+network["shunt"]["2"]["control_data"] = network["shunt"]["2"]["control_info"]
+network["shunt"]["3"]["control_data"] = network["shunt"]["3"]["control_info"]
+
+network["bus"]["3"]["vmin"] = 0.91
+network["bus"]["3"]["vmax"] = 0.95
+
+network["branch"]["3"]["control_data"] = Dict()
+network["branch"]["3"]["control_data"]["control_type"] = "shift_control"
+network["branch"]["3"]["control_data"]["constraint_type"] = "setpoint"
+network["branch"]["3"]["control_data"]["controlled_bus"] = 3
+network["branch"]["3"]["control_data"]["shiftmin"] = -0.5
+network["branch"]["3"]["control_data"]["shiftmax"] = 0.5
+network["branch"]["3"]["control_data"]["p"] = -0.5
+
+network["branch"]["4"]["control_data"] = Dict()
+network["branch"]["4"]["control_data"]["control_type"] = "fix"
+network["branch"]["4"]["control_data"]["constraint_type"] = "fix"
+network["branch"]["4"]["control_data"]["controlled_bus"] = 1
+
+
+network["branch"]["2"]["control_data"] = Dict()
+network["branch"]["2"]["control_data"]["control_type"] = "fix"
+network["branch"]["2"]["control_data"]["constraint_type"] = "fix"
+network["branch"]["2"]["control_data"]["controlled_bus"] = 1
+
+network["branch"]["1"]["control_data"] = Dict()
+network["branch"]["1"]["control_data"]["control_type"] = "fix"
+network["branch"]["1"]["control_data"]["constraint_type"] = "fix"
+network["branch"]["1"]["control_data"]["controlled_bus"] = 1
 
 control_info = Dict{String, Any}(
     "control_info" => Dict{Any, Any}(
@@ -92,45 +120,43 @@ control_info = Dict{String, Any}(
     )
 )
 
-ControlPF.set_control_info!(network, control_info)
+# ControlPF.set_control_info!(network, control_info)
+network["info"] = Dict()
+network["info"]["cphs"] = true
+network["info"]["csca"] = true
 set_ac_pf_start_values!(network)
-@time pm = instantiate_model(network, ACPPowerModel, ControlPF.build_br_pf);
+@time pm = instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
 
 print(pm.model)
 
 set_optimizer(pm.model, ipopt)
 result = optimize_model!(pm)
+result["solution"]["bus"]
+result["solution"]["branch"]
+result["solution"]["shunt"]
 update_data!(network, result["solution"])
+ControlPowerFlow.print_bus(network)
 update_data!(network, PowerModels.calc_branch_flow_ac(network))
 ControlPF.print_bus(network)
 ControlPF.print_gen(network)
 
-network["branch"]["1"]
+bus = network["bus"]["3"]
+status = "br_status"
+control_type = "tap_voltage_control"
+tap_voltage_control = "setpoint"
+!isempty(
+        findall(
+            branch -> branch[status] == 1 &&
+                      ControlPowerFlow._control_type(branch; control_type = control_type) &&
+                      ControlPowerFlow._tap_voltage_control(branch; tap_voltage_control  = tap_voltage_control) &&
+                      ControlPowerFlow._controlled_bus(branch, bus["bus_i"]), 
+            nw_ref[:branch])
+        )
+
+branch = ref(pm, :branch, 1)
 
 
-f_bus = 1890
-t_bus = 43388
-circuit = 1
-id = findall(branch -> branch["f_bus"] == f_bus && branch["t_bus"] == t_bus && branch["circuit"] == circuit, network["branch"])[1]
-branch = network["branch"][id]
-branch["pf"]
-branch["qf"]
-branch["pt"]
-branch["qt"]
 
-
-θ_factor_deg = 50
-θ_factor_rad = θ_factor_deg*3.14/180 # 
-V_factor_pu  = 0.1 # pu
-
-for (b, bus) in network["bus"]
-    bus["vmin"] = bus["vm"] - V_factor_pu
-    bus["vmax"] = bus["vm"] + V_factor_pu
-end
-for (b, bus) in network["bus"]
-    bus["vamin"] = bus["va"] - θ_factor_rad
-    bus["vamax"] = bus["va"] + θ_factor_rad
-end
 
 control_info = Dict{String, Any}(
     "control_info" => Dict{Any, Any}(

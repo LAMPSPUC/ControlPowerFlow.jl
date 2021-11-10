@@ -157,15 +157,15 @@ function control_constraints(pm::_PM.AbstractPowerModel)
     for q in ctr_ids(pm, "constraint_reactive_power_setpoint") constraint_reactive_power_setpoint(pm, q) end
 
     # transformer constraints
-    for t in ctr_ids(pm, "constraint_tap_ratio") constraint_tap_ratio(pm, t) end
-    for t in ctr_ids(pm, "constraint_tap_shift") constraint_tap_shift(pm, t) end
+    for t in ctr_ids(pm, "constraint_tap_ratio_bounds") constraint_tap_ratio_bounds(pm, t) end
+    for t in ctr_ids(pm, "constraint_shift_ratio_bounds") constraint_shift_ratio_bounds(pm, t) end
 
     # shunt constraints
     for s in ctr_ids(pm, "constraint_shunt") constraint_shunt(pm, s) end
     
     # dcline constraints
     for dc in ctr_ids(pm, "constraint_dcline_setpoint_active") constraint_dcline_setpoint_active(pm, dc) end
-    for dc in ctr_ids(pm, "constraint_dcline_setpoint_active") constraint_dcline_setpoint_active(pm, dc) end
+    for dc in ctr_ids(pm, "constraint_dcline_setpoint_reactive") constraint_dcline_setpoint_reactive(pm, dc) end
 end
 
 function build_br_pf(pm::_PM.AbstractPowerModel)

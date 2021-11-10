@@ -91,27 +91,29 @@ function constraint_reactive_power_setpoint(pm::_PM.AbstractPowerModel, n::Int, 
 end
 
 ""
-function constraint_tap_ratio(pm::_PM.AbstractPowerModel,  n::Int, i::Int, branch::Dict)
+function constraint_tap_ratio_bounds(pm::_PM.AbstractPowerModel,  n::Int, i::Int, branch::Dict)
     tap = var(pm, n)[:tap][i]
-    @show i
-    up, low = slack_in_bound_constraint(pm, n, i, "constraint_tap_ratio")
+    tapmin = _control_data(branch)["tapmin"]
+    tapmax =_control_data(branch)["tapmax"]
+    
+    up, low = slack_in_bound_constraint(pm, n, i, "constraint_tap_ratio_bounds")
 
     JuMP.@constraint(
-        pm.model, tap >= branch["tapmin"] - low
+        pm.model, tap >= tapmin - low
     )
 
     JuMP.@constraint(
-        pm.model, tap <= branch["tapmax"] + up
+        pm.model, tap <= tapmax + up
     )
 end
 
 ""
-function constraint_tap_shift(pm::_PM.AbstractPowerModel,  n::Int, i::Int, branch::Dict)
+function constraint_shift_ratio_bounds(pm::_PM.AbstractPowerModel,  n::Int, i::Int, branch::Dict)
     shift = var(pm, n)[:shift][i]
-    shift_min = branch["angmin"]
-    shift_max = branch["angmax"]
+    shift_min = _control_data(branch)["shiftmin"]
+    shift_max = _control_data(branch)["shiftmax"]
 
-    up, low = slack_in_bound_constraint(pm, n, i, "constraint_tap_shift")
+    up, low = slack_in_bound_constraint(pm, n, i, "constraint_shift_ratio_bounds")
 
     JuMP.@constraint(
         pm.model, shift >= shift_min - low
@@ -167,14 +169,15 @@ end
 ""
 function constraint_shunt_bounds(pm::_PM.AbstractPowerModel,  n::Int, i::Int, shunt::Dict)
     bs = var(pm, n)[:bs][i]
-
+    bsmin = _control_data(shunt)["bsmin"]
+    bsmax = _control_data(shunt)["bsmax"]
     up, low = slack_in_bound_constraint(pm, n, i, "constraint_shunt_bounds")
 
     JuMP.@constraint(
-        pm.model, bs >= shunt["bsmin"] - low
+        pm.model, bs >= bsmin - low
     )
 
     JuMP.@constraint(
-        pm.model, bs <= shunt["bsmax"] + up
+        pm.model, bs <= bsmax + up
     )
 end

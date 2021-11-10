@@ -103,7 +103,7 @@ end
 
 function _handle_control_info(pm::_PM.AbstractPowerModel)
     nw_ref = ref(pm)
-    if haskey(nw_ref, :info)
+    if haskey(nw_ref, :info) && !isempty(ref(nw_ref, :info))
         nw_ref[:control_info] = _control_info()
         _has_control(nw_ref, "qlim") ? _control(nw_ref, qlim_info) : nothing
         _has_control(nw_ref, "vlim") ? _control(nw_ref, vlim_info) : nothing

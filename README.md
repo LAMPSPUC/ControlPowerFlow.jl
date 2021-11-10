@@ -1,3 +1,3 @@
 # ControlPowerFlow.jl
 
-Adaptation of PowerModels.jl for classical Brazilian control actions in power flow analysis
+A package for performing AC power flow with controllable actions
