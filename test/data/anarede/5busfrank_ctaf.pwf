@@ -37,11 +37,7 @@ DLIN
 99999
 DCTR
 (Nf ) O (Nt ) Nc Vmin Vmax C M (Fmin) (Fmax) C ( Vsp) (Ext) Ns
-    3       4  1 0.95 1.05                   P   100.     3    
-    4       5  1 0.95 1.05                   P   100.     5                                       
+    3       4  1 0.95 1.05                                3                          
+    4       5  1 0.95 1.05                                5                          
 99999
-DTPF CIRC
-(De ) (Pa ) Nc (De ) (Pa ) Nc (De ) (Pa ) Nc (De ) (Pa ) Nc (De ) (Pa ) Nc O
-                                  1     4  1             
-99999                             
 FIM

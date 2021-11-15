@@ -98,7 +98,7 @@ function constraint_active_power_setpoint(pm::ControlAbstractModel, i::Int; nw::
     controlled_bus = _control_data(branch)["controlled_bus"]
     b_idx = controlled_bus == f_bus ? (i, f_bus, t_bus) : (i, t_bus, f_bus)
 
-    p = _control_data(branch)["p"]
+    p = _control_data(branch)["valsp"]
 
     constraint_active_power_setpoint(pm, nw, i, b_idx, p)
 end

@@ -37,7 +37,7 @@ const ctaf_info = Dict{Any, Any}(
         "1" => Dict(
             "name" => "constraint_voltage_magnitude_bounds",
             "element" => :bus,
-            "variable" => "con_vol_bou",
+            "variable" => "con_vol_mag_bou",
             "filters" => [
                 (bus, nw_ref) -> _controlled_by_transformer(
                                     nw_ref, bus; 

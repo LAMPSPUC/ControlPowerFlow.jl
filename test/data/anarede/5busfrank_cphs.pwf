@@ -31,16 +31,12 @@ DLIN
 (De )d O d(Pa )NcEP ( R% )( X% )(Mvar)(Tap)(Tmn)(Tmx)(Phs)(Bc  )(Cn)(Ce)Ns(Cq)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10
     1         2 1     18.1  17.4                                                                            
     1         3 1     18.1  17.4                                                                             
-    2         3 1     18.1  17.4        
-    3         4 1     18.1  17.4      1.0                    3
-    4         5 1     18.1  17.4      1.0                    5                                                                                                   
+    2         3 1     18.1  17.4       1.0 
+    3         4 1     18.1  17.4     
+    4         5 1     18.1  17.4                                                                                                    
 99999
 DCTR
-(Nf ) O (Nt ) Nc Vmin Vmax C M (Fmin) (Fmax) C ( Vsp) (Ext) Ns
-  3         4  1                 -22.    22. P 309.56     3                                       
+(Nf ) O (Nt ) Nc Vmin Vmax C M (Fmin) (Fmax) C ( Vsp) (Ext) Ns                  
+    2       3  1                 -30.    30. P   15.1     2              
 99999
-DTPF CIRC
-(De ) (Pa ) Nc (De ) (Pa ) Nc (De ) (Pa ) Nc (De ) (Pa ) Nc (De ) (Pa ) Nc O
-                                  3     4  1             
-99999                             
 FIM

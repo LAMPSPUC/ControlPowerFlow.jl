@@ -12,6 +12,8 @@
  
         set_optimizer(pm.model, ipopt)
         result = optimize_model!(pm)
+        @test termination_status(pm.model) == MOI.LOCALLY_SOLVED
+
         # fixed values values
         @test isapprox(result["solution"]["bus"]["1"]["va"], data["bus"]["1"]["va"], atol = tol)
         @test isapprox(result["solution"]["bus"]["1"]["vm"] - result["solution"]["bus"]["1"]["sl_con_vol_mag_set"], data["bus"]["1"]["vm"], atol = tol)
@@ -25,7 +27,6 @@
         @test isapprox(result["solution"]["gen"]["2"]["pg"], data["gen"]["2"]["pg"], atol = tol)   
     end
     @testset "vlim" begin
-        optimizer = ipopt
         file = joinpath(@__DIR__, "data/anarede/4busfrank_vlim.pwf")
         data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
         data["info"]
@@ -39,6 +40,8 @@
  
         set_optimizer(pm.model, ipopt)
         result = optimize_model!(pm)
+        @test termination_status(pm.model) == MOI.LOCALLY_SOLVED
+        
         # fixed values values
         @test isapprox(result["solution"]["bus"]["1"]["va"], data["bus"]["1"]["va"], atol = tol)
 
@@ -67,7 +70,8 @@
  
         set_optimizer(pm.model, ipopt)
         result = optimize_model!(pm)
-
+        @test termination_status(pm.model) == MOI.LOCALLY_SOLVED
+        
         @test result["solution"]["shunt"]["2"]["bs"] >= data["shunt"]["2"]["control_data"]["bsmin"] - tol
         @test result["solution"]["shunt"]["2"]["bs"] <= data["shunt"]["2"]["control_data"]["bsmax"] - tol
         @test result["solution"]["shunt"]["3"]["bs"] >= data["shunt"]["3"]["control_data"]["bsmin"] - tol
@@ -101,6 +105,7 @@
  
         set_optimizer(pm.model, ipopt)
         result = optimize_model!(pm)
+        @test termination_status(pm.model) == MOI.LOCALLY_SOLVED
 
         @test result["solution"]["branch"]["4"]["tap"] >= data["branch"]["4"]["control_data"]["tapmin"] - tol
         @test result["solution"]["branch"]["4"]["tap"] <= data["branch"]["4"]["control_data"]["tapmax"] + tol
@@ -118,67 +123,57 @@
             atol = tol
         )
     end
-    # @testset "ctaf" begin
-    #     optimizer = ipopt
-    #     file = joinpath(@__DIR__, "data/anarede/5busfrank_ctaf.pwf")
-    #     data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
-    #     data["info"]
+    @testset "ctaf" begin
+        file = joinpath(@__DIR__, "data/anarede/5busfrank_ctaf.pwf")
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
 
-    #     pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
-    
-    #     @test haskey(var(pm), :tap)
-    #     @test length(var(pm, :tap)) == 2
-    #     @test haskey(var(pm), :sl_con_vol_mag_set)
-    #     @test length(var(pm, :sl_con_vol_mag_set)) == 2
+        pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
+
+        @test haskey(var(pm), :tap)
+        @test length(var(pm, :tap)) == 2
+        @test haskey(var(pm), :sl_con_vol_mag_bou_upp)
+        @test length(var(pm, :sl_con_vol_mag_bou_upp)) == 2
  
-    #     set_optimizer(pm.model, ipopt)
-    #     result = optimize_model!(pm)
-
-    #     @test result["solution"]["branch"]["4"]["tap"] >= data["branch"]["4"]["control_data"]["tapmin"] - tol
-    #     @test result["solution"]["branch"]["4"]["tap"] <= data["branch"]["4"]["control_data"]["tapmax"] + tol
-    #     @test result["solution"]["branch"]["5"]["tap"] >= data["branch"]["5"]["control_data"]["tapmin"] - tol
-    #     @test result["solution"]["branch"]["5"]["tap"] <= data["branch"]["5"]["control_data"]["tapmax"] + tol
-
-    #     @test isapprox(
-    #         result["solution"]["bus"]["3"]["vm"] - result["solution"]["bus"]["3"]["sl_con_vol_mag_set"], 
-    #         data["bus"]["3"]["vm"];
-    #         atol = tol
-    #     )
-    #     @test isapprox(
-    #         result["solution"]["bus"]["5"]["vm"] - result["solution"]["bus"]["5"]["sl_con_vol_mag_set"], 
-    #         data["bus"]["5"]["vm"];
-    #         atol = tol
-    #     )
-    # end
-    # @testset "cphs" begin
-    #     file = joinpath(@__DIR__, "data/anarede/5busfrank_cphs.pwf")
-    #     data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
-    #     data["info"]
-
-    #     pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
-    
-    #     @test haskey(var(pm), :tap)
-    #     @test length(var(pm, :tap)) == 2
-    #     @test haskey(var(pm), :sl_con_vol_mag_set)
-    #     @test length(var(pm, :sl_con_vol_mag_set)) == 2
+        @test haskey(var(pm), :sl_con_vol_mag_bou_low)
+        @test length(var(pm, :sl_con_vol_mag_bou_low)) == 2
  
-    #     set_optimizer(pm.model, ipopt)
-    #     result = optimize_model!(pm)
+        set_optimizer(pm.model, ipopt)
+        result = optimize_model!(pm)
+        @test termination_status(pm.model) == MOI.LOCALLY_SOLVED
 
-    #     @test result["solution"]["branch"]["4"]["tap"] >= data["branch"]["4"]["control_data"]["tapmin"] - tol
-    #     @test result["solution"]["branch"]["4"]["tap"] <= data["branch"]["4"]["control_data"]["tapmax"] + tol
-    #     @test result["solution"]["branch"]["5"]["tap"] >= data["branch"]["5"]["control_data"]["tapmin"] - tol
-    #     @test result["solution"]["branch"]["5"]["tap"] <= data["branch"]["5"]["control_data"]["tapmax"] + tol
+        @test result["solution"]["branch"]["4"]["tap"] >= data["branch"]["4"]["control_data"]["tapmin"] - tol
+        @test result["solution"]["branch"]["4"]["tap"] <= data["branch"]["4"]["control_data"]["tapmax"] + tol
+        @test result["solution"]["branch"]["5"]["tap"] >= data["branch"]["5"]["control_data"]["tapmin"] - tol
+        @test result["solution"]["branch"]["5"]["tap"] <= data["branch"]["5"]["control_data"]["tapmax"] + tol
 
-    #     @test isapprox(
-    #         result["solution"]["bus"]["3"]["vm"] - result["solution"]["bus"]["3"]["sl_con_vol_mag_set"], 
-    #         data["bus"]["3"]["vm"];
-    #         atol = tol
-    #     )
-    #     @test isapprox(
-    #         result["solution"]["bus"]["5"]["vm"] - result["solution"]["bus"]["5"]["sl_con_vol_mag_set"], 
-    #         data["bus"]["5"]["vm"];
-    #         atol = tol
-    #     )
-    # end
+        @test result["solution"]["bus"]["3"]["vm"] + result["solution"]["bus"]["3"]["sl_con_vol_mag_bou_low"] >= data["bus"]["3"]["vmin"]  - tol
+        @test result["solution"]["bus"]["3"]["vm"] - result["solution"]["bus"]["3"]["sl_con_vol_mag_bou_upp"] <= data["bus"]["3"]["vmax"]  + tol
+        @test result["solution"]["bus"]["5"]["vm"] + result["solution"]["bus"]["5"]["sl_con_vol_mag_bou_low"] >= data["bus"]["5"]["vmin"]  - tol
+        @test result["solution"]["bus"]["5"]["vm"] - result["solution"]["bus"]["5"]["sl_con_vol_mag_bou_upp"] <= data["bus"]["5"]["vmax"]  + tol
+    end
+    @testset "cphs" begin
+        file = joinpath(@__DIR__, "data/anarede/5busfrank_cphs.pwf")
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
+        data["info"] 
+
+        pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
+        print(pm.model)
+        @test haskey(var(pm), :shift)
+        @test length(var(pm, :shift)) == 1
+        @test haskey(var(pm), :sl_con_act_pow_set)
+        @test length(var(pm, :sl_con_act_pow_set)) == 1
+ 
+        set_optimizer(pm.model, ipopt)
+        result = optimize_model!(pm)
+        @test termination_status(pm.model) == MOI.LOCALLY_SOLVED
+
+        @test result["solution"]["branch"]["5"]["shift"] >= data["branch"]["5"]["control_data"]["shiftmin"] - tol
+        @test result["solution"]["branch"]["5"]["shift"] <= data["branch"]["5"]["control_data"]["shiftmax"] + tol
+
+        @test isapprox(
+            value(var(pm, :p)[(5, 2, 3)]) - result["solution"]["branch"]["5"]["sl_con_act_pow_set"], 
+            data["branch"]["5"]["control_data"]["valsp"];
+            atol = tol
+        ) # todo figure out how to put active power result into dictionary
+    end
 end
