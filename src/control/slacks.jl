@@ -1,17 +1,14 @@
+has_control_slacks(pm::_PM.AbstractPowerModel)  = has_control(pm) && haskey(ref(pm, :control_info), :control_slacks)
+has_control_slacks(pm::_PM.AbstractPowerModel, constraint_name::String) = has_control_slacks(pm) && haskey(ref(pm, :control_info, :control_slacks), constraint_name) && !isempty(ref(pm, :control_info, :control_slacks)[constraint_name]["indexes"])
 
-## 
-
-has_slack_variables(pm::_PM.AbstractPowerModel)  = has_control(pm) && haskey(ref(pm, :control_info), :slack_variables)
-has_slack_variables(pm::_PM.AbstractPowerModel, constraint_name::String) = has_slack_variables(pm) && haskey(ref(pm, :control_info, :slack_variables), constraint_name) && !isempty(ref(pm, :control_info, :slack_variables)[constraint_name]["indexes"])
-
-function create_slack_variables_bound(
+function create_control_slacks_bound(
     pm::_PM.AbstractPowerModel, nw::Int, report::Bool, 
     constraint_name::String, name::String, el_sym::Symbol)
 
     pos_nm = "sl_"*name*"_upp"
     neg_nm = "sl_"*name*"_low"
 
-    slack_ids = ref(pm, nw, :control_info, :slack_variables)[constraint_name]["indexes"]
+    slack_ids = ref(pm, nw, :control_info, :control_slacks)[constraint_name]["indexes"]
 
     if !isempty(slack_ids)
         slack_pos = var(pm, nw)[Symbol(pos_nm)] = JuMP.@variable(pm.model,
@@ -29,13 +26,13 @@ function create_slack_variables_bound(
     end
 end
 
-function create_slack_variables_equalto(
+function create_control_slacks_equalto(
     pm::_PM.AbstractPowerModel, nw::Int, report::Bool, 
     constraint_name::String, name::String, el_sym::Symbol)
     
     eq_to_nm = "sl_"*name
 
-    slack_ids = ref(pm, nw, :control_info, :slack_variables)[constraint_name]["indexes"]
+    slack_ids = ref(pm, nw, :control_info, :control_slacks)[constraint_name]["indexes"]
 
     if !isempty(slack_ids)
         slack = var(pm, nw)[Symbol(eq_to_nm)] = JuMP.@variable(pm.model,
@@ -47,20 +44,20 @@ function create_slack_variables_equalto(
     end
 end
 
-function create_slack_variables(
+function create_control_slacks(
     pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, report::Bool=true)
 
-    for (name, slack_variable) in ref(pm, nw, :control_info, :slack_variables)
+    for (name, slack_variable) in ref(pm, nw, :control_info, :control_slacks)
         if slack_variable["type"] == :bound 
 
-            create_slack_variables_bound(
+            create_control_slacks_bound(
                 pm, nw, report, 
                 slack_variable["name"], slack_variable["variable"], slack_variable["element"]
             )
 
         elseif slack_variable["type"] == :equalto  
 
-            create_slack_variables_equalto(
+            create_control_slacks_equalto(
                 pm, nw, report, 
                 slack_variable["name"], slack_variable["variable"], slack_variable["element"]
             )
@@ -69,14 +66,13 @@ function create_slack_variables(
     end
 end
 
-
 ########### constraint ############
 
 function slack_in_equality_constraint(
-    pm::_PM.AbstractPolarModels, n::Int, i,
+    pm::ControlAbstractModel, n::Int, i,
     constraint_name::String, slack)
     
-    slack_info = ref(pm, n, :control_info, :slack_variables)[constraint_name]
+    slack_info = ref(pm, n, :control_info, :control_slacks)[constraint_name]
     if i in slack_info["indexes"]
         var_nm = slack_info["variable"]
         eq_to_nm = "sl_"*var_nm
@@ -87,11 +83,11 @@ function slack_in_equality_constraint(
 end
 
 function slack_in_equality_constraint(
-    pm::_PM.AbstractPolarModels, n::Int, i,
+    pm::ControlAbstractModel, n::Int, i,
     constraint_name::String)
     slack = 0.0
     
-    if has_slack_variables(pm, constraint_name)
+    if has_control_slacks(pm, constraint_name)
         slack += slack_in_equality_constraint(pm, n, i, constraint_name, slack)
     end
 
@@ -99,10 +95,10 @@ function slack_in_equality_constraint(
 end
 
 function slack_in_upper_constraint(
-    pm::_PM.AbstractPolarModels, n::Int, i,
+    pm::ControlAbstractModel, n::Int, i,
     constraint_name::String, slack)
 
-    slack_info = ref(pm, n, :control_info, :slack_variables)[constraint_name]
+    slack_info = ref(pm, n, :control_info, :control_slacks)[constraint_name]
     if i in slack_info["indexes"]
         var_nm = slack_info["variable"]
         pos_nm = "sl_"*var_nm*"_upp"
@@ -113,10 +109,10 @@ function slack_in_upper_constraint(
 end
 
 function slack_in_lower_constraint(
-    pm::_PM.AbstractPolarModels, n::Int, i,
+    pm::ControlAbstractModel, n::Int, i,
     constraint_name::String, slack)
 
-    slack_info = ref(pm, n, :control_info, :slack_variables)[constraint_name]
+    slack_info = ref(pm, n, :control_info, :control_slacks)[constraint_name]
     if i in slack_info["indexes"]
         var_nm = slack_info["variable"]
         neg_nm = "sl_"*var_nm*"_low"
@@ -127,13 +123,13 @@ function slack_in_lower_constraint(
 end
 
 function slack_in_bound_constraint(
-    pm::_PM.AbstractPolarModels, n::Int, i,
+    pm::ControlAbstractModel, n::Int, i,
     constraint_name::String)
     
     up  = 0.0
     low = 0.0
     
-    if has_slack_variables(pm, constraint_name)
+    if has_control_slacks(pm, constraint_name)
         up  += slack_in_upper_constraint(pm, n, i, constraint_name, up)
         low += slack_in_lower_constraint(pm, n, i, constraint_name, low)
     end

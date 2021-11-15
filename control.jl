@@ -9,136 +9,67 @@ ipopt = optimizer_with_attributes(Ipopt.Optimizer, "tol"=>0.00001)
 
 # PWF system file
 file = "scripts\\data\\pwf\\3busfrank.pwf"
+
 # Reading PWF and converting to PowerModels network data dictionary
 data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; software = ControlPowerFlow.ParserPWF.Organon)
 network = deepcopy(data)
-
-network["shunt"]["1"]["control_data"] = network["shunt"]["1"]["control_info"]
-network["shunt"]["2"]["control_data"] = network["shunt"]["2"]["control_info"]
-network["shunt"]["3"]["control_data"] = network["shunt"]["3"]["control_info"]
-
-network["bus"]["3"]["vmin"] = 0.91
-network["bus"]["3"]["vmax"] = 0.95
-
-network["branch"]["3"]["control_data"] = Dict()
-network["branch"]["3"]["control_data"]["control_type"] = "shift_control"
-network["branch"]["3"]["control_data"]["constraint_type"] = "setpoint"
-network["branch"]["3"]["control_data"]["controlled_bus"] = 3
-network["branch"]["3"]["control_data"]["shiftmin"] = -0.5
-network["branch"]["3"]["control_data"]["shiftmax"] = 0.5
-network["branch"]["3"]["control_data"]["p"] = -0.5
-
-network["branch"]["4"]["control_data"] = Dict()
-network["branch"]["4"]["control_data"]["control_type"] = "fix"
-network["branch"]["4"]["control_data"]["constraint_type"] = "fix"
-network["branch"]["4"]["control_data"]["controlled_bus"] = 1
-
-
-network["branch"]["2"]["control_data"] = Dict()
-network["branch"]["2"]["control_data"]["control_type"] = "fix"
-network["branch"]["2"]["control_data"]["constraint_type"] = "fix"
-network["branch"]["2"]["control_data"]["controlled_bus"] = 1
-
-network["branch"]["1"]["control_data"] = Dict()
-network["branch"]["1"]["control_data"]["control_type"] = "fix"
-network["branch"]["1"]["control_data"]["constraint_type"] = "fix"
-network["branch"]["1"]["control_data"]["controlled_bus"] = 1
-
-control_info = Dict{String, Any}(
-    "control_info" => Dict{Any, Any}(
-        :controlled_bus => true,
-        :control_variables => Dict{Any, Any}(
-            "shunt" => Dict{Any, Any}(
-                "name"     => "shunt",
-                "variable" => "bs",
-                "element"  => :shunt,
-                "start"    => 0.0,
-                "indexes"  => parse.(Int, findall(shunt->shunt["shunt_type"] in [1,2] && shunt["status"] == 1, network["shunt"]))
-            )
-        ),
-        :control_constraints => Dict{Any, Any}(
-            # "constraint_voltage_magnitude_setpoint" => Dict{Any, Any}(
-            #     "name"    => "constraint_voltage_magnitude_setpoint",
-            #     "element" => :bus,
-            #     "indexes" => parse.(Int, findall(bus->bus["bus_type"] == 1, network["bus"]))
-            # ),
-            # "constraint_voltage_angle_setpoint" => Dict{Any, Any}(
-            #     "name"    => "constraint_voltage_angle_setpoint",
-            #     "element" => :bus,
-            #     "indexes" => parse.(Int, findall(bus->bus["bus_type"] in [1,2], network["bus"]))
-            # ),
-            # "constraint_voltage_magnitude_bounds" => Dict{Any, Any}(
-            #     "name"    => "constraint_voltage_magnitude_bounds",
-            #     "element" => :bus,
-            #     "indexes" => parse.(Int, findall(bus->bus["bus_type"] == 1, network["bus"]))
-            # ),
-            "constraint_voltage_angle_bounds" => Dict{Any, Any}(
-                "name"    => "constraint_voltage_angle_bounds",
-                "element" => :bus,
-                "indexes" => parse.(Int, findall(bus->bus["bus_type"] in [2], network["bus"]))
-            ),
-            # "constraint_shunt" => Dict{Any, Any}(
-            #     "name"    => "constraint_shunt",
-            #     "element" => :shunt,
-            #     "indexes"  => parse.(Int, findall(shunt->shunt["shunt_type"] == 2 && shunt["status"] == 1, network["shunt"]))
-            # ),
-        ),
-        :slack_variables => Dict{Any, Any}(
-            # "constraint_voltage_magnitude_setpoint" => Dict{Any, Any}(
-            #     "name"    => "constraint_voltage_magnitude_setpoint",
-            #     "variable"=> "con_vol_mag_set",
-            #     "weight" => 1.0,
-            #     "element" => :bus,
-            #     "indexes" => [parse(Int,i) for (i, bus) in network["bus"] if bus["bus_type"] != 4],
-            #     "type" => :equalto
-            # ),
-            # "constraint_voltage_angle_setpoint" => Dict{Any, Any}(
-            #     "name"    => "constraint_voltage_angle_setpoint",
-            #     "variable"=> "con_vol_ang_set",
-            #     "weight" => 1.0,
-            #     "element" => :bus,
-            #     "indexes" => [parse(Int,i) for (i, bus) in network["bus"] if bus["bus_type"] != 4],
-            #     "type" => :equalto
-            # ),
-            "constraint_power_balance_active" => Dict{Any, Any}(
-                "name"    => "constraint_power_balance_active",
-                "variable"=> "con_pow_bal_act",
-                "weight" => 1.0,
-                "element" => :bus,
-                "indexes" => [parse(Int,i) for (i, bus) in network["bus"] if bus["bus_type"] != 4],
-                "type" => :equalto
-            ),
-            "constraint_power_balance_reactive" => Dict{Any, Any}(
-                "name"    => "constraint_power_balance_reactive",
-                "variable"=> "con_pow_bal_rea",
-                "weight" => 1.0,
-                "element" => :bus,
-                "indexes" => [parse(Int,i) for (i, bus) in network["bus"] if bus["bus_type"] != 4],
-                "type" => :equalto
-            ),
-        )
-    )
+network
+network["info"] = Dict(
+    "qlim" => true
 )
 
-# ControlPF.set_control_info!(network, control_info)
-network["info"] = Dict()
-network["info"]["cphs"] = true
-network["info"]["csca"] = true
-set_ac_pf_start_values!(network)
-@time pm = instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_br_pf);
 
-print(pm.model)
+set_ac_pf_start_values!(network)
+
+@time pm = instantiate_model(network, ACPPowerModel, ControlPowerFlow.build_pf);
+
+@time pm = instantiate_model(network, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
+
+ref(pm, :control_info)
+
+ref(pm, :control_info, :control_slacks)
+
+ref(pm, :control_info, :control_constraints)
+
+ref(pm, :control_info, :control_slacks)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 set_optimizer(pm.model, ipopt)
 result = optimize_model!(pm)
 result["solution"]["bus"]
 result["solution"]["branch"]
 result["solution"]["shunt"]
+
 update_data!(network, result["solution"])
-ControlPowerFlow.print_bus(network)
 update_data!(network, PowerModels.calc_branch_flow_ac(network))
-ControlPF.print_bus(network)
-ControlPF.print_gen(network)
+
 
 bus = network["bus"]["3"]
 status = "br_status"
@@ -197,7 +128,7 @@ control_info = Dict{String, Any}(
             #     "indexes"  => parse.(Int, findall(shunt->shunt["shunt_type"] == 2 && shunt["status"] == 1, network["shunt"]))
             # ),
         ),
-        :slack_variables => Dict{Any, Any}(
+        :control_slacks => Dict{Any, Any}(
             "constraint_voltage_magnitude_setpoint" => Dict{Any, Any}(
                 "name"    => "constraint_voltage_magnitude_setpoint",
                 "variable"=> "con_vol_mag_set",
@@ -238,7 +169,7 @@ ControlPF.set_control_info!(network, control_info)
 set_ac_pf_start_values!(network)
 @time pm = instantiate_model(network, ACPPowerModel, ControlPF.build_br_pf);
 
-# print(pm.model)
+# 
 set_optimizer(pm.model, ipopt)
 result = optimize_model!(pm)
 

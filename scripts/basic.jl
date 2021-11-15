@@ -36,7 +36,7 @@ network_pwf["slack"]
 solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-8)
 include("src/ControlPowerFlow.jl")
 pm = ControlPowerFlow._PM.instantiate_model(network_pwf, ACPPowerModel, ControlPowerFlow.build_br_pf);
-print(pm.model)
+
 
 result = ControlPowerFlow.run_br_pf(network_pwf, solver);
 

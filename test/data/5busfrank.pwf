@@ -1,10 +1,5 @@
 TITU
-Caso do Anderson - P�gina 38                                                    
-DOPC IMPR
-(Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E
-QLIM L CREM L STEP L NEWT L MOST L MOSG L MOSF L RCVG L RMON L FILE L
-CONT L CELO L MFCT L
-99999
+Caso
 DCTE
 (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) 
 BASE   100. DASE   100. TEPA     .1 EXST     .4 TETP     5. TBPA     5.
@@ -22,22 +17,18 @@ LFPO     .1
 99999
 DBAR
 (Num)OETGb(   nome   )Gl( V)( A)( Pg)( Qg)( Qn)( Qm)(Bc  )( Pl)( Ql)( Sh)Are(Vf)M(1)(2)(3)(4)(5)(6)(7)(8)(9)(10
-    1 L2 ABus 1         10290.00 1.5223.68-130.130.4                       11000                                 
-    2 L1 ABus 2         1030 0.012.99  2.5-130.130.4                       11000                               
-    3 L0 ABus 3         10000.77 5.99  2.5 10  10         50.3925.32   2.  11000                                    
+    1 L2 ABus 1         10290.0011.5223.68-130.130.4                       11000                                 
+    2 L1 ABus 2         1030 0.012.99  2.5-130.130.4                       11000                                
+    3 L0 ABus 3         10300.77 5.99  2.5                50.3925.32       11000                                      
+    4 L0 ABus 4         10300.77                           0.39 2.32       11000                                      
+    5 L0 ABus 5         10300.77                           0.39 2.32       11000                                      
 99999
 DLIN
 (De )d O d(Pa )NcEP ( R% )( X% )(Mvar)(Tap)(Tmn)(Tmx)(Phs)(Bc  )(Cn)(Ce)Ns(Cq)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10
-    1         2 1     18.1  17.4            0.95 1.1                                                               
-    1         3 1     18.1  17.4            0.95 1.1                                                         
-    2         3 1     18.1  17.4            0.95 1.1                                                                                     
-99999
-DBSH
-(NFr) O (NTo) Nc C (Vmn (Vmx Bctrl (Qini) T A (Extr
- 2               C 0990 1010    2    -10. L         
-(G  O E (U) UOp (Sht ) M
- 1       10   5     5. S
- 2       19   5   -10. S
-FBAN
+    1         2 1     18.1  17.4                                                                            
+    1         3 1     18.1  17.4                                                                             
+    2         3 1     18.1  17.4  
+    3         4 1     18.1  17.4  
+    4         5 1     18.1  17.4                                                                                                         
 99999
 FIM

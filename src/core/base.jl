@@ -1,6 +1,15 @@
 const bus_key = Dict(:shunt => "shunt_bus", :gen => "gen_bus", :load => "load_bus")
 
-abstract type AbstractACPModel <: _PM.AbstractPowerModel end
+""
+abstract type ControlAbstractModel <: _PM.AbstractPowerModel end
+
+""
+abstract type ControlAbstractACPModel <: ControlAbstractModel end
+
+""
+mutable struct ControlACPPowerModel <: ControlAbstractACPModel @pm_fields end
+
+ControlAbstractPolarModels = Union{ControlACPPowerModel}
 
 # functions
 

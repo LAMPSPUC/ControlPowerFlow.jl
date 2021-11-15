@@ -1,5 +1,5 @@
 ""
-function expression_branch_power_ohms_yt_from(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function expression_branch_power_ohms_yt_from(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     if !haskey(var(pm, nw), :p)
         var(pm, nw)[:p] = Dict{Tuple{Int,Int,Int},Any}()
     end
@@ -22,7 +22,7 @@ end
 
 
 ""
-function expression_branch_power_ohms_yt_to(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function expression_branch_power_ohms_yt_to(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     if !haskey(var(pm, nw), :p)
         var(pm, nw)[:p] = Dict{Tuple{Int,Int,Int},Any}()
     end

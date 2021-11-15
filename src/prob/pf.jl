@@ -28,32 +28,32 @@ function run_pf(network_data::Dict, model_type, optimizer, model_constructor::Fu
     return _PM.run_model(network_data, model_type, optimizer, model_constructor; kwargs...)
 end
 
-function variables(pm::_PM.AbstractPowerModel)
-    _PM.variable_bus_voltage(pm, bounded = false)
+function variables(pm::ControlAbstractModel)
+    variable_bus_voltage(pm, bounded = false)
     _PM.variable_dcline_power(pm, bounded = false)
-    variable_gen_power(pm, bounded = false) 
+    _PM.variable_gen_power(pm, bounded = false) 
 end
 
-function objective(pm::_PM.AbstractPowerModel, obj)
+function objective(pm::ControlAbstractModel, obj)
     @objective(pm.model, Min, obj)
 end
 
-function objective(pm::_PM.AbstractPowerModel)
+function objective(pm::ControlAbstractModel)
     obj = 0.0
-    if has_slack_variables(pm)
+    if has_control_slacks(pm)
         obj += objective_slack(pm)
     end
     objective(pm, obj)
 end
 
-function expressions(pm::_PM.AbstractPowerModel)
+function expressions(pm::ControlAbstractModel)
     for i in ids(pm, :branch)
         expression_branch_power_ohms_yt_from(pm, i)
         expression_branch_power_ohms_yt_to(pm, i)
     end
 end
 
-function constraint_ref_bus(pm::_PM.AbstractPowerModel)
+function constraint_ref_bus(pm::ControlAbstractModel)
     for (i,bus) in ref(pm, :ref_buses)
         @assert bus["bus_type"] == 3
         constraint_theta_ref(pm, i)
@@ -69,7 +69,7 @@ function constraint_ref_bus(pm::_PM.AbstractPowerModel)
     end
 end
 
-function constraint_pv(pm::_PM.AbstractPowerModel, i::Int, bus::Dict)
+function constraint_pv(pm::ControlAbstractModel, i::Int, bus::Dict)
     # this assumes inactive generators are filtered out of bus_gens
     @assert bus["bus_type"] == 2
 
@@ -79,11 +79,11 @@ function constraint_pv(pm::_PM.AbstractPowerModel, i::Int, bus::Dict)
     end
 end
 
-function constraint_pq(pm::_PM.AbstractPowerModel, i::Int, bus::Dict)
+function constraint_pq(pm::ControlAbstractModel, i::Int, bus::Dict)
     @assert bus["bus_type"] == 1
 end
 
-function constraint_bus(pm::_PM.AbstractPowerModel)
+function constraint_bus(pm::ControlAbstractModel)
     for (i,bus) in ref(pm, :bus)
         # Power balance constraints
         constraint_power_balance(pm, i)
@@ -97,7 +97,7 @@ function constraint_bus(pm::_PM.AbstractPowerModel)
     end
 end
 
-function constraint_dcline(pm::_PM.AbstractPowerModel)
+function constraint_dcline(pm::ControlAbstractModel)
     for (i,dcline) in ref(pm, :dcline)
         #constraint_dcline_power_losses(pm, i) not needed, active power flow fully defined by dc line setpoints
         _PM.constraint_dcline_setpoint_active(pm, i)
@@ -114,11 +114,11 @@ function constraint_dcline(pm::_PM.AbstractPowerModel)
     end
 end
 
-function constraint_branch(pm::_PM.AbstractPowerModel)
+function constraint_branch(pm::ControlAbstractModel)
     
 end
 
-function constraints(pm::_PM.AbstractPowerModel)
+function constraints(pm::ControlAbstractModel)
     # Reference bus constraints
     constraint_ref_bus(pm)
     # Bus constraints
@@ -129,18 +129,18 @@ function constraints(pm::_PM.AbstractPowerModel)
     constraint_dcline(pm)
 end
 
-function control_variables(pm::_PM.AbstractPowerModel)
+function control_variables(pm::ControlAbstractModel)
     has_control_variables(pm) ? create_control_variables(pm) : nothing
-    has_slack_variables(pm)   ? create_slack_variables(pm)   : nothing
+    has_control_slacks(pm)    ? create_control_slacks(pm)    : nothing
 end
 
-function control_constraints(pm::_PM.AbstractPowerModel)
+function control_constraints(pm::ControlAbstractModel)
     # bus constraints
-    for b in ctr_ids(pm, "constraint_theta_ref")                constraint_theta_ref(pm, b)                end
-    for b in ctr_ids(pm, "constraint_voltage_magnitude_bounds") constraint_voltage_magnitude_bounds(pm, b) end
-    for b in ctr_ids(pm, "constraint_voltage_angle_bounds")     constraint_voltage_angle_bounds(pm, b)     end
+    for b in ctr_ids(pm, "constraint_theta_ref")                  constraint_theta_ref(pm, b)                end
+    for b in ctr_ids(pm, "constraint_voltage_magnitude_bounds")   constraint_voltage_magnitude_bounds(pm, b) end
+    for b in ctr_ids(pm, "constraint_voltage_angle_bounds")       constraint_voltage_angle_bounds(pm, b)     end
     for b in ctr_ids(pm, "constraint_voltage_magnitude_setpoint") constraint_voltage_magnitude_setpoint(pm,  controlled_bus(pm, b, "voltage_controlled_bus", "bus_i")) end
-    for b in ctr_ids(pm, "constraint_voltage_angle_setpoint")   constraint_voltage_angle_setpoint(pm,  b) end
+    for b in ctr_ids(pm, "constraint_voltage_angle_setpoint")     constraint_voltage_angle_setpoint(pm,  b)  end
 
     # load constraints
     for d in ctr_ids(pm, "constraint_load_setpoint_active")   constraint_load_setpoint_active(pm, d)   end
@@ -157,18 +157,19 @@ function control_constraints(pm::_PM.AbstractPowerModel)
     for q in ctr_ids(pm, "constraint_reactive_power_setpoint") constraint_reactive_power_setpoint(pm, q) end
 
     # transformer constraints
-    for t in ctr_ids(pm, "constraint_tap_ratio_bounds") constraint_tap_ratio_bounds(pm, t) end
+    for t in ctr_ids(pm, "constraint_tap_ratio_bounds")   constraint_tap_ratio_bounds(pm, t) end
     for t in ctr_ids(pm, "constraint_shift_ratio_bounds") constraint_shift_ratio_bounds(pm, t) end
 
     # shunt constraints
-    for s in ctr_ids(pm, "constraint_shunt") constraint_shunt(pm, s) end
+    for s in ctr_ids(pm, "constraint_shunt_setpoint") constraint_shunt_setpoint(pm, s) end
+    for s in ctr_ids(pm, "constraint_shunt_bounds")   constraint_shunt_bounds(pm, s) end
     
     # dcline constraints
-    for dc in ctr_ids(pm, "constraint_dcline_setpoint_active") constraint_dcline_setpoint_active(pm, dc) end
+    for dc in ctr_ids(pm, "constraint_dcline_setpoint_active")   constraint_dcline_setpoint_active(pm, dc) end
     for dc in ctr_ids(pm, "constraint_dcline_setpoint_reactive") constraint_dcline_setpoint_reactive(pm, dc) end
 end
 
-function build_br_pf(pm::_PM.AbstractPowerModel)
+function build_pf(pm::ControlAbstractModel)
     _handle_control_info(pm)
     # Create model variables
     variables(pm)
@@ -182,4 +183,8 @@ function build_br_pf(pm::_PM.AbstractPowerModel)
     control_constraints(pm)
     # Define model objective function
     objective(pm)
+end
+
+function build_pf(pm::_PM.AbstractPowerModel)
+    _PM.build_pf(pm)
 end

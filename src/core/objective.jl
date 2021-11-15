@@ -1,10 +1,10 @@
-function objective_slack(pm::_PM.AbstractPowerModel)
+function objective_slack(pm::ControlAbstractModel)
     obj = 0.0
 
-    slack_info = ref(pm, :control_info, :slack_variables)
+    slack_info = ref(pm, :control_info, :control_slacks)
     for (n, nw_ref) in _PM.nws(pm)
         for (constraint, info) in slack_info
-            if has_slack_variables(pm, constraint)
+            if has_control_slacks(pm, constraint)
                 var_nm = info["variable"]
                 type   = info["type"]
                 weight = info["weight"]
@@ -25,7 +25,7 @@ function objective_slack(pm::_PM.AbstractPowerModel)
     return obj
 end
 
-function objective_control(pm::_PM.AbstractPowerModel)
+function objective_control(pm::ControlAbstractModel)
     obj = 0.0
 
     return obj

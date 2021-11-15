@@ -1,35 +1,35 @@
 ""
-function constraint_theta_ref(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_theta_ref(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
     constraint_theta_ref(pm, nw, i, bus["va"])
 end
 
 ""
-function constraint_voltage_magnitude_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_voltage_magnitude_setpoint(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
     constraint_voltage_magnitude_setpoint(pm, nw, bus["index"], bus["vm"])
 end
 
 ""
-function constraint_voltage_angle_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_voltage_angle_setpoint(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
     constraint_voltage_angle_setpoint(pm, nw, bus["index"], bus["va"])
 end
 
 ""
-function constraint_voltage_magnitude_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_voltage_magnitude_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
     constraint_voltage_magnitude_bounds(pm, nw, i, bus["vmax"], bus["vmin"])
 end
 
 ""
-function constraint_voltage_angle_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_voltage_angle_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
     constraint_voltage_angle_bounds(pm, nw, i, bus["vamax"], bus["vamin"])
 end
 
 ""
-function constraint_power_balance(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_power_balance(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
     bus_arcs = ref(pm, nw, :bus_arcs, i)
     bus_arcs_dc = ref(pm, nw, :bus_arcs_dc, i)
@@ -54,43 +54,43 @@ function constraint_power_balance(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw
 end
 
 ""
-function constraint_load_setpoint_active(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_load_setpoint_active(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     load = ref(pm, nw, :load, i)
     constraint_load_setpoint_active(pm, nw, load["index"], load["pd"])
 end
 
 ""
-function constraint_load_setpoint_reactive(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_load_setpoint_reactive(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     load = ref(pm, nw, :load, i)
     constraint_load_setpoint_reactive(pm, nw, load["index"], load["qd"])
 end
 
 ""
-function constraint_gen_setpoint_active(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_gen_setpoint_active(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     gen = ref(pm, nw, :gen, i)
     constraint_gen_setpoint_active(pm, nw, gen["index"], gen["pg"])
 end
 
 ""
-function constraint_gen_setpoint_reactive(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_gen_setpoint_reactive(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     gen = ref(pm, nw, :gen, i)
     constraint_gen_setpoint_active(pm, nw, gen["index"], gen["qg"])
 end
 
 ""
-function constraint_gen_reactive_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_gen_reactive_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     gen = ref(pm, nw, :gen, i)
     constraint_gen_reactive_bounds(pm, nw, gen["index"], gen["qmax"], gen["qmin"])
 end
 
 ""
-function constraint_gen_active_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_gen_active_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     gen = ref(pm, nw, :gen, i)
     constraint_gen_active_bounds(pm, nw, gen["index"], gen["pmax"], gen["pmin"])
 end
 
 ""
-function constraint_active_power_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_active_power_setpoint(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -104,7 +104,7 @@ function constraint_active_power_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw
 end
 
 ""
-function constraint_reactive_power_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_reactive_power_setpoint(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -119,29 +119,32 @@ end
 
 
 ""
-function constraint_tap_ratio_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_tap_ratio_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, i)
     constraint_tap_ratio_bounds(pm, nw, i, branch)
 end
 
 ""
-function constraint_shift_ratio_bounds(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_shift_ratio_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, i)
     constraint_shift_ratio_bounds(pm, nw, i, branch)
 end
 
 ""
-function constraint_shunt(pm::_PM.AbstractPowerModel, s::Int; nw::Int=nw_id_default)
+function constraint_shunt_setpoint(pm::ControlAbstractModel, s::Int; nw::Int=nw_id_default)
     shunt = ref(pm, :shunt, s)
-    if _control_data(shunt)["shunt_type"] == 1 # fixed
-        constraint_shunt_setpoint(pm, nw, s, shunt)
-    elseif _control_data(shunt)["shunt_type"] == 2 # variable
-        constraint_shunt_bounds(pm, nw, s, shunt)
-    end
+    constraint_shunt_setpoint(pm, nw, s, shunt)
 end
 
 ""
-function constraint_dcline_setpoint_active(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_shunt_bounds(pm::ControlAbstractModel, s::Int; nw::Int=nw_id_default)
+    shunt = ref(pm, :shunt, s)
+    constraint_shunt_bounds(pm, nw, s, shunt)
+end
+
+
+""
+function constraint_dcline_setpoint_active(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     dcline = ref(pm, nw, :dcline, i)
     f_bus = dcline["f_bus"]
     t_bus = dcline["t_bus"]
