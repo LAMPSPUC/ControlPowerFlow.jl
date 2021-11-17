@@ -1,3 +1,9 @@
+_has_control_info(nw_ref::Dict) = haskey(nw_ref, :control_info)
+_has_info(nw_ref::Dict) = haskey(nw_ref, :info)
+_has_actions(nw_ref::Dict) = haskey(nw_ref, :info) && haskey(nw_ref[:info], :actions)
+_has_generic_info(nw_ref, code) = typeof(nw_ref[:info][:actions][code]) <: Dict
+_is_default_control(code) = haskey(default_control_actions, code)
+
 _control_data(element::Dict) = element["control_data"]
 
 function _controlled_by_shunt(nw_ref::Dict, bus::Dict; shunt_control_type = 2)

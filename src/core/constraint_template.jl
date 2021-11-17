@@ -1,6 +1,6 @@
 ""
 function constraint_theta_ref(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
-    bus = ref(pm, nw, :bus, i)
+    bus = ref(pm, nw, :bus)
     constraint_theta_ref(pm, nw, i, bus["va"])
 end
 
