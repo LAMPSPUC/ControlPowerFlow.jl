@@ -1,7 +1,7 @@
 @testset "Control from control_info" begin
 
     file = joinpath(@__DIR__, "data/3busfrank_continuous_shunt.pwf")
-    data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
+    data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
     control_info = Dict(
         "control_info" => Dict{Any, Any}(

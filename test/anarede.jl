@@ -2,7 +2,7 @@
     tol = 1e-3
     @testset "qlim" begin
         file = joinpath(@__DIR__, "data/anarede/3busfrank_qlim.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
         data["info"]
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
@@ -28,7 +28,7 @@
     end
     @testset "vlim" begin
         file = joinpath(@__DIR__, "data/anarede/4busfrank_vlim.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
         data["info"]
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
@@ -45,17 +45,17 @@
         # fixed values values
         @test isapprox(result["solution"]["bus"]["1"]["va"], data["bus"]["1"]["va"], atol = tol)
 
-        @test result["solution"]["bus"]["3"]["vm"] >= data["bus"]["3"]["vmin"] - tol
-        @test result["solution"]["bus"]["3"]["vm"] <= data["bus"]["3"]["vmax"] + tol
-        @test result["solution"]["bus"]["4"]["vm"] >= data["bus"]["4"]["vmin"] - tol
-        @test result["solution"]["bus"]["4"]["vm"] <= data["bus"]["4"]["vmax"] + tol
+        @test result["solution"]["bus"]["3"]["vm"] >= data["bus"]["3"]["control_data"]["vmmin"] - tol
+        @test result["solution"]["bus"]["3"]["vm"] <= data["bus"]["3"]["control_data"]["vmmax"] + tol
+        @test result["solution"]["bus"]["4"]["vm"] >= data["bus"]["4"]["control_data"]["vmmin"] - tol
+        @test result["solution"]["bus"]["4"]["vm"] <= data["bus"]["4"]["control_data"]["vmmax"] + tol
 
         @test isapprox(result["solution"]["load"]["1"]["sl_con_load_set_rea"], -0.96987; atol = tol)
         @test isapprox(result["solution"]["load"]["2"]["sl_con_load_set_rea"], -0.35143; atol = tol)
     end
     @testset "csca" begin
         file = joinpath(@__DIR__, "data/anarede/5busfrank_csca.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
     
@@ -89,12 +89,12 @@
             data["bus"]["5"]["vm"];
             atol = tol
         )
-        @test result["solution"]["bus"]["4"]["vm"] + result["solution"]["bus"]["4"]["sl_con_vol_mag_bou_low"] >= data["bus"]["4"]["vmin"]  - tol
-        @test result["solution"]["bus"]["4"]["vm"] - result["solution"]["bus"]["4"]["sl_con_vol_mag_bou_upp"] <= data["bus"]["4"]["vmax"]  + tol
+        @test result["solution"]["bus"]["4"]["vm"] + result["solution"]["bus"]["4"]["sl_con_vol_mag_bou_low"] >= data["bus"]["4"]["control_data"]["vmmin"]  - tol
+        @test result["solution"]["bus"]["4"]["vm"] - result["solution"]["bus"]["4"]["sl_con_vol_mag_bou_upp"] <= data["bus"]["4"]["control_data"]["vmmax"]  + tol
     end
     @testset "ctap" begin
         file = joinpath(@__DIR__, "data/anarede/5busfrank_ctap.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
     
@@ -125,7 +125,7 @@
     end
     @testset "ctaf" begin
         file = joinpath(@__DIR__, "data/anarede/5busfrank_ctaf.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
 
@@ -146,18 +146,17 @@
         @test result["solution"]["branch"]["5"]["tap"] >= data["branch"]["5"]["control_data"]["tapmin"] - tol
         @test result["solution"]["branch"]["5"]["tap"] <= data["branch"]["5"]["control_data"]["tapmax"] + tol
 
-        @test result["solution"]["bus"]["3"]["vm"] + result["solution"]["bus"]["3"]["sl_con_vol_mag_bou_low"] >= data["bus"]["3"]["vmin"]  - tol
-        @test result["solution"]["bus"]["3"]["vm"] - result["solution"]["bus"]["3"]["sl_con_vol_mag_bou_upp"] <= data["bus"]["3"]["vmax"]  + tol
-        @test result["solution"]["bus"]["5"]["vm"] + result["solution"]["bus"]["5"]["sl_con_vol_mag_bou_low"] >= data["bus"]["5"]["vmin"]  - tol
-        @test result["solution"]["bus"]["5"]["vm"] - result["solution"]["bus"]["5"]["sl_con_vol_mag_bou_upp"] <= data["bus"]["5"]["vmax"]  + tol
+        @test result["solution"]["bus"]["3"]["vm"] + result["solution"]["bus"]["3"]["sl_con_vol_mag_bou_low"] >= data["bus"]["3"]["control_data"]["vmmin"]  - tol
+        @test result["solution"]["bus"]["3"]["vm"] - result["solution"]["bus"]["3"]["sl_con_vol_mag_bou_upp"] <= data["bus"]["3"]["control_data"]["vmmax"]  + tol
+        @test result["solution"]["bus"]["5"]["vm"] + result["solution"]["bus"]["5"]["sl_con_vol_mag_bou_low"] >= data["bus"]["5"]["control_data"]["vmmin"]  - tol
+        @test result["solution"]["bus"]["5"]["vm"] - result["solution"]["bus"]["5"]["sl_con_vol_mag_bou_upp"] <= data["bus"]["5"]["control_data"]["vmmax"]  + tol
     end
     @testset "cphs" begin
         file = joinpath(@__DIR__, "data/anarede/5busfrank_cphs.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
-        data["info"] 
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
-        print(pm.model)
+        
         @test haskey(var(pm), :shift)
         @test length(var(pm, :shift)) == 1
         @test haskey(var(pm), :sl_con_act_pow_set)
