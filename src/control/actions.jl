@@ -224,17 +224,21 @@ function _handle_control_slacks!(nw_ref::Dict, info::Dict)
         variable        = nw_info["variable"]
         filters         = nw_info["filters"]
         type            = nw_info["type"]
+        weight = haskey(nw_info, "weight") ?  nw_info["weight"] : 1.0
         nw_indexes = ids_nw_ref(nw_ref, element; filters = filters)
         if haskey(control_slacks, constraint_name)
             control_slacks[constraint_name]["indexes"] = unique(vcat(
                 control_slacks[constraint_name]["indexes"], 
                 nw_indexes
             ))
+            if haskey(nw_info, "weight")
+                control_slacks[constraint_name]["weight"] = weight
+            end
         else
             nw_constraint = Dict{Any, Any}()
             nw_constraint["name"]     = constraint_name
             nw_constraint["variable"] = variable
-            nw_constraint["weight"]   = 1.0
+            nw_constraint["weight"]   = weight
             nw_constraint["element"]  = element
             nw_constraint["indexes"]  = nw_indexes
             nw_constraint["type"]     = type

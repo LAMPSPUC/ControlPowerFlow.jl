@@ -51,6 +51,7 @@ const ctaf_info = Dict{Any, Any}(
                 (branch, nw_ref) -> _constraint_type(branch; constraint_type = "bounds")
             ],
             "type" => :equalto,
+            "weight" => 0.1
         ),
         "2" => Dict(
             "name" => "constraint_voltage_magnitude_bounds",

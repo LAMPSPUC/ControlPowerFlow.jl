@@ -78,7 +78,7 @@ end
 ""
 function constraint_gen_setpoint_reactive(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     gen = ref(pm, nw, :gen, i)
-    constraint_gen_setpoint_active(pm, nw, gen["index"], gen["qg"])
+    constraint_gen_setpoint_reactive(pm, nw, gen["index"], gen["qg"])
 end
 
 ""

@@ -1,26 +1,7 @@
-function run_br_pf(file::String, optimizer; kwargs...)
-    network_data = ParserPWF.parse_pwf_to_powermodels(file)
-    return run_br_pf(network_data, _PM.ACPPowerModel, optimizer; kwargs...)
-end
-
-function run_br_pf(network_data::Dict, optimizer; kwargs...)
-    return run_br_pf(network_data, _PM.ACPPowerModel, optimizer; kwargs...)
-end
-
-function run_br_pf(file::String, model_type::Type, optimizer; kwargs...)
-    network_data = ParserPWF.parse_pwf_to_powermodels(file)
-    return run_br_pf(network_data, model_type, optimizer; kwargs...)
-end
-
-function run_br_pf(network_data::Dict, model_type::Type, optimizer; kwargs...)
-    handle_control_info!(network_data)
-    handle_slack_info!(network_data)
-    
-    return _PM.run_model(network_data, model_type, optimizer, build_br_pf; kwargs...)
-end
-
-function run_pf(file::String, model_type, optimizer, model_constructor::Function; kwargs...)
-    network_data = ParserPWF.parse_pwf_to_powermodels(file)
+function run_pf(file::String, model_type, optimizer, model_constructor::Function; 
+                software = ParserPWF.ANAREDE, add_control_data = true, 
+                kwargs...)
+    network_data = ParserPWF.parse_pwf_to_powermodels(file; software = software, add_control_data = add_control_data)
     return run_pf(network_data, model_type, optimizer, model_constructor; kwargs...)
 end
 
