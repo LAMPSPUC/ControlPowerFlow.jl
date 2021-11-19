@@ -19,13 +19,17 @@ end
 ""
 function constraint_voltage_magnitude_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
-    constraint_voltage_magnitude_bounds(pm, nw, i, bus["vmax"], bus["vmin"])
+    vmmin = _control_data(bus)["vmmin"]
+    vmmax = _control_data(bus)["vmmax"]
+    constraint_voltage_magnitude_bounds(pm, nw, i, vmmax, vmmin)
 end
 
 ""
 function constraint_voltage_angle_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     bus = ref(pm, nw, :bus, i)
-    constraint_voltage_angle_bounds(pm, nw, i, bus["vamax"], bus["vamin"])
+    vamin = _control_data(bus)["vamin"]
+    vamax = _control_data(bus)["vamax"]
+    constraint_voltage_angle_bounds(pm, nw, i, vamax, vamin)
 end
 
 ""
@@ -117,11 +121,22 @@ function constraint_reactive_power_setpoint(pm::ControlAbstractModel, i::Int; nw
     constraint_active_power_setpoint(pm, nw, i, b_idx, q)
 end
 
+""
+function constraint_tap_ratio_setpoint(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
+    branch = ref(pm, nw, :branch, i)
+    constraint_tap_ratio_setpoint(pm, nw, i, branch)
+end
 
 ""
 function constraint_tap_ratio_bounds(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, i)
     constraint_tap_ratio_bounds(pm, nw, i, branch)
+end
+
+""
+function constraint_shift_ratio_setpoint(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
+    branch = ref(pm, nw, :branch, i)
+    constraint_shift_ratio_setpoint(pm, nw, i, branch)
 end
 
 ""

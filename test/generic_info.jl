@@ -1,7 +1,7 @@
 @testset "Control from generic_info" begin
 
     file = joinpath(@__DIR__, "data/3busfrank_continuous_shunt.pwf")
-    data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
+    data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
     generic_info = Dict{Any, Any}(
         :control_variables => Dict{Any, Any}(
@@ -65,7 +65,9 @@
     )
 
     data["info"] = Dict(
-        "generic_info" => generic_info,
+        "actions" => Dict(
+            "generic_info" => generic_info,
+        )
     )
 
     pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
@@ -92,8 +94,10 @@
 
     ## Testing Repeated Control - This should be equivalent of adding only one
     data["info"] = Dict(
-        "generic_info" => generic_info,
-        "generic_info" => generic_info,
+        "actions" => Dict(
+            "generic_info" => generic_info,
+            "generic_info" => generic_info,
+        )
     )
 
     pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
@@ -117,40 +121,13 @@
 
     @test haskey(result["solution"]["bus"]["3"], "sl_con_vol_mag_set")
     @test haskey(result["solution"]["shunt"]["1"], "bs")
-
-  ## Testing Repeated Control - This should be equivalent of adding only one
-    data["info"] = Dict(
-        "generic_info" => generic_info,
-        "generic_info" => generic_info,
-    )
-
-    pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
-
-    
-
-    # New Control Variables
-    @test length(var(pm, :bs)) == 1
-    @test !haskey(var(pm), :tap)
-    @test !haskey(var(pm), :shift)
-    
-    # Slack Variables 
-    @test !haskey(var(pm), :sl_con_vol_mag_bou_upp)
-    @test !haskey(var(pm), :sl_con_vol_mag_bou_low)
-    @test length(var(pm, :sl_con_vol_mag_set)) == 1
-
-    set_optimizer(pm.model, ipopt)
-    result = optimize_model!(pm)
-
-    @test termination_status(pm.model) == MOI.LOCALLY_SOLVED
-
-    @test haskey(result["solution"]["bus"]["3"], "sl_con_vol_mag_set")
-    @test haskey(result["solution"]["shunt"]["1"], "bs")
-
 
     ## Testing Generic combined with default
     data["info"] = Dict(
-        "generic_info" => generic_info,
-        "qlim" => true
+        "actions" => Dict(
+            "generic_info" => generic_info,
+            "qlim" => true
+        )
     )
 
     pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);

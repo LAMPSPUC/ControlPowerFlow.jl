@@ -2,11 +2,12 @@
     tol = 1e-3
     @testset "cslv" begin
         file = joinpath(@__DIR__, "data/5busfrank.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file)
-        dict = ControlPowerFlow.ParserPWF.parse_pwf(file)
+        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         data["info"] = Dict(
-            "cslv" => true
+            "actions" => Dict(
+                "cslv" => true
+            )
         )
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
     

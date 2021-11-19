@@ -157,7 +157,9 @@ function control_constraints(pm::ControlAbstractModel)
     for q in ctr_ids(pm, "constraint_reactive_power_setpoint") constraint_reactive_power_setpoint(pm, q) end
 
     # transformer constraints
+    for t in ctr_ids(pm, "constraint_tap_ratio_setpoint") constraint_tap_ratio_setpoint(pm, t) end
     for t in ctr_ids(pm, "constraint_tap_ratio_bounds")   constraint_tap_ratio_bounds(pm, t) end
+    for t in ctr_ids(pm, "constraint_shift_ratio_setpoint") constraint_shift_ratio_setpoint(pm, t) end
     for t in ctr_ids(pm, "constraint_shift_ratio_bounds") constraint_shift_ratio_bounds(pm, t) end
 
     # shunt constraints

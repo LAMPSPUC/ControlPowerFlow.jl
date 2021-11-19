@@ -76,11 +76,11 @@ function _handle_generic_info!(generic_info::Dict)
 end
 
 function _has_control(nw_ref::Dict, control::String) 
-    if haskey(nw_ref[:info], control)
-        if typeof(nw_ref[:info][control]) == Bool
-            return nw_ref[:info][control]
+    if haskey(nw_ref[:info]["actions"], control)
+        if typeof(nw_ref[:info]["actions"][control]) == Bool
+            return nw_ref[:info]["actions"][control]
         else
-            return _handle_generic_info!(nw_ref[:info][control])
+            return _handle_generic_info!(nw_ref[:info]["actions"][control])
         end
     end
 end
@@ -251,19 +251,19 @@ end
 
 function _handle_control_info(pm::_PM.AbstractPowerModel)
     nw_ref = ref(pm)
-    if !haskey(nw_ref, :control_info)
+    if !_has_control_info(nw_ref)
         nw_ref[:control_info] = _control_info()
     else
         _handle_control_info!(nw_ref[:control_info])
     end
-    if haskey(nw_ref, :info)
-        for code in keys(nw_ref[:info])
-            if haskey(default_control_actions, code)
+    if _has_actions(nw_ref) # control actions inside network -> data["info"]["action"]
+        for code in keys(nw_ref[:info]["actions"])
+            if _is_default_control(code) # if
                 _has_control(nw_ref, code) ? _control(nw_ref, default_control_actions[code]) : nothing
-            elseif typeof(nw_ref[:info][code]) == Bool
-                @warn("Control $code not recognized. If your want to use this control, please insert a generic control information.")
+            elseif _has_generic_info(nw_ref, code)
+                _has_control(nw_ref, code) ? _control(nw_ref, nw_ref[:info]["actions"][code]) : nothing
             else
-                _has_control(nw_ref, code) ? _control(nw_ref, nw_ref[:info][code]) : nothing
+                @warn("Control $code not recognized. If your want to use this control, please insert a generic control info attached to it.")
             end
         end
     end 
