@@ -90,6 +90,19 @@ function constraint_reactive_power_setpoint(pm::ControlAbstractModel, n::Int, i:
     JuMP.@NLconstraint(pm.model, q_var == q + slack)
 end
 
+
+""
+function constraint_tap_ratio_setpoint(pm::ControlAbstractModel,  n::Int, i::Int, branch::Dict)
+    tap = var(pm, n)[:tap][i]
+    tapsp = branch["tap"]
+    
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_tap_ratio_setpoint")
+
+    JuMP.@constraint(
+        pm.model, tap == tapsp - slack
+    )
+end
+
 ""
 function constraint_tap_ratio_bounds(pm::ControlAbstractModel,  n::Int, i::Int, branch::Dict)
     tap = var(pm, n)[:tap][i]
@@ -104,6 +117,18 @@ function constraint_tap_ratio_bounds(pm::ControlAbstractModel,  n::Int, i::Int, 
 
     JuMP.@constraint(
         pm.model, tap <= tapmax + up
+    )
+end
+
+""
+function constraint_shift_ratio_setpoint(pm::ControlAbstractModel,  n::Int, i::Int, branch::Dict)
+    shift = var(pm, n)[:shift][i]
+    shiftsp = branch["shift"]
+    
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_shift_ratio_setpoint")
+
+    JuMP.@constraint(
+        pm.model, shift == shiftsp - slack
     )
 end
 
