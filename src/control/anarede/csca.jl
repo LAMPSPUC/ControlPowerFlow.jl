@@ -19,6 +19,13 @@ const csca_info = Dict{Any, Any}(
             ]
         ),
         "2" => Dict(
+            "name" => "constraint_shunt_setpoint",
+            "element" => :shunt,
+            "filters" => [
+                (shunt, nw_ref) -> _control_data(shunt)["shunt_type"] == 2
+            ]
+        ),
+        "3" => Dict(
             "name" => "constraint_voltage_magnitude_bounds",
             "element" => :bus,
             "filters" => [
@@ -26,7 +33,7 @@ const csca_info = Dict{Any, Any}(
                 (bus, nw_ref) -> bus["bus_type"] == 1 # PQ
             ]
         ),
-        "3" => Dict(
+        "4" => Dict(
             "name" => "constraint_voltage_magnitude_setpoint",
             "element" => :bus,
             "filters" => [
@@ -37,6 +44,15 @@ const csca_info = Dict{Any, Any}(
     ),
     :control_slacks => Dict(
         "1" => Dict(
+            "name" => "constraint_shunt_setpoint",
+            "element" => :shunt,
+            "variable" => "con_shu_set",
+            "filters" => [
+                (shunt, nw_ref) -> _control_data(shunt)["shunt_type"] == 2
+            ],
+            "type" => :equalto,
+        ),
+        "2" => Dict(
             "name" => "constraint_voltage_magnitude_bounds",
             "element" => :bus,
             "variable" => "con_vol_mag_bou",
@@ -46,7 +62,7 @@ const csca_info = Dict{Any, Any}(
             ],
             "type" => :bound,
         ),
-        "2" => Dict(
+        "3" => Dict(
             "name" => "constraint_voltage_magnitude_setpoint",
             "element" => :bus,
             "variable" => "con_vol_mag_set",
