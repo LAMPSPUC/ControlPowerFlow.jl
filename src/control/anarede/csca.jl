@@ -51,7 +51,7 @@ const csca_info = Dict{Any, Any}(
                 (shunt, nw_ref) -> _control_data(shunt)["shunt_type"] == 2
             ],
             "type" => :equalto,
-            "weight" => 0.1
+            "weight" => 1e-3
         ),
         "2" => Dict(
             "name" => "constraint_voltage_magnitude_bounds",
