@@ -1,12 +1,12 @@
 # using Packages
 using PowerModels, Ipopt, JuMP
-using ParserPWF
+using PWF
 
 # Include ControlPowerFlow module
 include("../src/ControlPowerFlow.jl")
-ipopt = optimizer_with_attributes(Ipopt.Optimizer, "tol"=>0.001) 
+ipopt = optimizer_with_attributes(Ipopt.Optimizer, "tol"=>0.001, "max_iter"=>100) 
 # PWF system file
-file = "scripts\\data\\pwf\\3busfrank.pwf"
+file = "scripts\\data\\pwf\\EMS\\EMS_base_fora_ponta.PWF"
 
 # Reading PWF and converting to PowerModels network data dictionary
 software = ControlPowerFlow.ParserPWF.Organon
