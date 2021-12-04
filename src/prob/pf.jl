@@ -85,12 +85,12 @@ function constraint_dcline(pm::ControlAbstractModel)
 
         f_bus = ref(pm, :bus)[dcline["f_bus"]]
         if f_bus["bus_type"] == 1
-            _PM.constraint_voltage_magnitude_setpoint(pm, f_bus["index"])
+            constraint_voltage_magnitude_setpoint(pm, f_bus["index"])
         end
 
         t_bus = ref(pm, :bus)[dcline["t_bus"]]
         if t_bus["bus_type"] == 1
-            _PM.constraint_voltage_magnitude_setpoint(pm, t_bus["index"])
+            constraint_voltage_magnitude_setpoint(pm, t_bus["index"])
         end
     end
 end
