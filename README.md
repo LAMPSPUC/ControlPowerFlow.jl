@@ -1,3 +1,3 @@
-# BrazilianPowerModels.jl
+# ControlPowerFlow.jl
 
-Adaptation of PowerModels.jl for Energisa MUST II
+A package for performing AC power flow with controllable actions

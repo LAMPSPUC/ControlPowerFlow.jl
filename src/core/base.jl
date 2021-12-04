@@ -1,8 +1,25 @@
 const bus_key = Dict(:shunt => "shunt_bus", :gen => "gen_bus", :load => "load_bus")
 
+""
+abstract type ControlAbstractModel <: _PM.AbstractPowerModel end
+
+""
+abstract type ControlAbstractACPModel <: ControlAbstractModel end
+
+""
+mutable struct ControlACPPowerModel <: ControlAbstractACPModel @pm_fields end
+
+ControlAbstractPolarModels = Union{ControlACPPowerModel}
+
+# functions
+
+pv_bus(pm::_PM.AbstractPowerModel, i::Int) = length(ref(pm, :bus_gens, i)) > 0 && !(i in ids(pm,:ref_buses))
+
+pq_bus(pm::_PM.AbstractPowerModel, i::Int) = length(ref(pm, :bus_gens, i)) == 0 
+
 controlled_bus(pm::_PM.AbstractPowerModel, i::Int) = _PM.ref(pm, :bus, i, "voltage_controlled_bus")
 
-function elements_from_bus(pm::BrazilianPowerModels._PM.AbstractPowerModel, 
+function elements_from_bus(pm::ControlPowerFlow._PM.AbstractPowerModel, 
                           element::Symbol, bus::Int, nw::Int; 
                           filters::Vector = [])
 

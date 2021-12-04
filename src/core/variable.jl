@@ -1,5 +1,5 @@
 "generates variables for both `active` and `reactive` generation"
-function variable_gen_power(pm::_PM.AbstractPowerModel; kwargs...)
+function variable_gen_power(pm::ControlAbstractModel; kwargs...)
     _PM.variable_gen_power_real(pm; kwargs...)
     _PM.variable_gen_power_imaginary(pm; kwargs...)
 end

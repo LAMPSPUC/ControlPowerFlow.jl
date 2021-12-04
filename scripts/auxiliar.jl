@@ -1,0 +1,1 @@
+branch_info(branch::Dict) = @info("From: $(branch["f_bus"]) | To: $(branch["t_bus"]) | Circuit: $(branch["control_data"]["circuit"]) | Transformer: $(branch["transformer"]) | Status: $(branch["br_status"])")
