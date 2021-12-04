@@ -52,7 +52,7 @@ include("control/data.jl")
 include("control/actions.jl")
 include("control/variables.jl")
 include("control/constraints.jl")
-include("control/slackS.jl")
+include("control/slacks.jl")
 
 # Additional functions
 include("util/visualization.jl")
