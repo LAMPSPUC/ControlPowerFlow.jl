@@ -1,0 +1,20 @@
+TITU
+2 Bus generic system                                             
+DOPC IMPR
+(Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E (Op) E
+QLIM L
+99999
+DCTE
+(Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) (Mn) ( Val) 
+BASE   100. DASE   100. TEPA     .1 EXST     .4 TETP     5. TBPA     5.           
+99999
+DBAR
+(Num)OETGb(   nome   )Gl( V)( A)( Pg)( Qg)( Qn)( Qm)(Bc  )( Pl)( Ql)( Sh)Are(Vf)M(1)(2)(3)(4)(5)(6)(7)(8)(9)(10
+    1 L2 ABus 1        11029  0.  38.9.396-130.130.4                   3.  11000                                                                    
+    2 L  ABus 2        21000-.44                          50.39  30.       11000                                                               
+99999
+DLIN
+(De )d O d(Pa )NcEP ( R% )( X% )(Mvar)(Tap)(Tmn)(Tmx)(Phs)(Bc  )(Cn)(Ce)Ns(Cq)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10
+    1         2 1     18.1  17.4                                99999999  9999                                                          
+99999
+FIM

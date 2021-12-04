@@ -1,20 +1,32 @@
-function objective_slack(pm::_PM.AbstractPowerModel)
+function objective_slack(pm::ControlAbstractModel)
     obj = 0.0
 
+    slack_info = ref(pm, :control_info, :control_slacks)
     for (n, nw_ref) in _PM.nws(pm)
-        for (funct_name, filt) in ref(pm, n, :slack)
-            if haskey(slack_function, funct_name)
-                var_nm = slack_function[funct_name][2]
-                pos_nm = "sl_"*var_nm*"_pos"
-                neg_nm = "sl_"*var_nm*"_neg"
-
-                obj += sum(var(pm, n, Symbol(pos_nm)))
-                obj += sum(var(pm, n, Symbol(neg_nm)))
+        for (constraint, info) in slack_info
+            if has_control_slacks(pm, constraint)
+                var_nm = info["variable"]
+                type   = info["type"]
+                weight = info["weight"]
+                if type == :bound
+                    pos_nm = "sl_"*var_nm*"_upp"
+                    neg_nm = "sl_"*var_nm*"_low"
+    
+                    obj += weight*sum(var(pm, n, Symbol(pos_nm)).^2)
+                    obj += weight*sum(var(pm, n, Symbol(neg_nm)).^2)
+                elseif type == :equalto
+                    eq_to_nm = "sl_"*var_nm
+                    obj += weight*sum(var(pm, n, Symbol(eq_to_nm)).^2)
+                end
             end
         end
     end
 
-    JuMP.@objective(pm.model, Min,
-        obj
-    )
+    return obj
+end
+
+function objective_control(pm::ControlAbstractModel)
+    obj = 0.0
+
+    return obj
 end

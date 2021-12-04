@@ -1,62 +1,14 @@
 # using Packages
 using PowerModels, Ipopt, JuMP
-using ParserPWF
+using PWF
 
-# Include BrazilianPowerModels module
-include("src/BrazilianPowerModels.jl")
-
+# Include ControlPowerFlow module
+include("../src/ControlPowerFlow.jl")
+include("auxiliar.jl")
+ipopt = optimizer_with_attributes(Ipopt.Optimizer,"max_iter"=>300, "tol"=>0.001) 
 # PWF system file
-file = "scripts\\data\\pwf\\3busfrank.pwf"
+file = "scripts\\data\\pwf\\franks\\6busfrank.PWF"
 
 # Reading PWF and converting to PowerModels network data dictionary
-network = BrazilianPowerModels.ParserPWF.parse_pwf_to_powermodels(file)
-
-
-network_pwf = deepcopy(network)
-
-slack = Dict(
-    "slack" => Dict(
-        # "constraint_voltage_bounds"                => true,
-        # "constraint_theta_ref"                     => true,
-        # "constraint_voltage_magnitude_setpoint"    => true,
-        # "constraint_gen_setpoint_active"           => true,
-        # "constraint_gen_setpoint_reactive"         => true,
-        # "constraint_gen_reactive_bounds"           => true,
-        # "constraint_power_balance_active"          => true,
-        # "constraint_power_balance_reactive"        => true,
-        # "constraint_shunt"                         => true,
-        # "constraint_dcline_setpoint_active_fr"     => true,
-        # "constraint_dcline_setpoint_active_to"     => true,
-    )
-)
-
-BrazilianPowerModels._PM.update_data!(network_pwf, slack)
-network_pwf["slack"]
-
-solver = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-8)
-include("src/BrazilianPowerModels.jl")
-pm = BrazilianPowerModels._PM.instantiate_model(network_pwf, ACPPowerModel, BrazilianPowerModels.build_br_pf);
-print(pm.model)
-
-result = BrazilianPowerModels.run_br_pf(network_pwf, solver);
-
-result["solution"]["bus"]["1"]
-
-control = Dict(
-    "control" => Dict(
-        # "voltage"      => true,
-        # "gen_active"   => true,
-        # "gen_reactive" => true,
-        # "shunt"        => true,
-        # "tap"          => true,
-    )
-)
-
-control_functions = Dict(
-    "voltage"       => (control_voltage_bounds),
-    "gen_active"    => (control_gen_active_bounds),
-    "gen_reactive"  => (control_gen_reactive_bounds),
-    "shunt"         => (control_shunt_bounds),
-    "tap"           => (control_tap_bounds),
-)
-
+data = PWF.parse_file(file, pm = true, add_control_data = true)
+network = deepcopy(data)
