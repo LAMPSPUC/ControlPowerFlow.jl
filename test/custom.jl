@@ -2,7 +2,7 @@
     tol = 1e-3
     @testset "cslv" begin
         file = joinpath(@__DIR__, "data/5busfrank.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
+        data = PWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         data["info"] = Dict(
             "actions" => Dict(

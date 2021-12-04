@@ -2,13 +2,13 @@
     tol = 1e-3
     @testset "qlim" begin
         file = joinpath(@__DIR__, "data/anarede/3busfrank_qlim.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
+        data = PWF.parse_pwf_to_powermodels(file; add_control_data = true)
         data["info"]
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
     
         @test haskey(var(pm), :sl_con_vol_mag_set)
-        @test length(var(pm, :sl_con_vol_mag_set)) == 2
+        @test length(var(pm, :sl_con_vol_mag_set)) == 1 # only in PV buses
  
         set_optimizer(pm.model, ipopt)
         result = optimize_model!(pm)
@@ -16,7 +16,6 @@
 
         # fixed values values
         @test isapprox(result["solution"]["bus"]["1"]["va"], data["bus"]["1"]["va"], atol = tol)
-        @test isapprox(result["solution"]["bus"]["1"]["vm"] - result["solution"]["bus"]["1"]["sl_con_vol_mag_set"], data["bus"]["1"]["vm"], atol = tol)
         @test isapprox(result["solution"]["bus"]["2"]["vm"] - result["solution"]["bus"]["2"]["sl_con_vol_mag_set"], data["bus"]["2"]["vm"], atol = tol)
 
         @test result["solution"]["gen"]["1"]["qg"] >= data["gen"]["1"]["qmin"] - tol
@@ -28,7 +27,7 @@
     end
     @testset "vlim" begin
         file = joinpath(@__DIR__, "data/anarede/4busfrank_vlim.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
+        data = PWF.parse_pwf_to_powermodels(file; add_control_data = true)
         data["info"]
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
@@ -55,7 +54,7 @@
     end
     @testset "csca" begin
         file = joinpath(@__DIR__, "data/anarede/5busfrank_csca.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
+        data = PWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
     
@@ -94,7 +93,7 @@
     end
     @testset "ctap" begin
         file = joinpath(@__DIR__, "data/anarede/5busfrank_ctap.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
+        data = PWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
     
@@ -125,7 +124,7 @@
     end
     @testset "ctaf" begin
         file = joinpath(@__DIR__, "data/anarede/5busfrank_ctaf.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
+        data = PWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
 
@@ -153,7 +152,7 @@
     end
     @testset "cphs" begin
         file = joinpath(@__DIR__, "data/anarede/5busfrank_cphs.pwf")
-        data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
+        data = PWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
         pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf);
         

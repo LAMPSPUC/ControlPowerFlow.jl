@@ -1,11 +1,15 @@
-function run_pf(file::String, model_type, optimizer, model_constructor::Function; 
-                software = ParserPWF.ANAREDE, add_control_data = true, 
-                kwargs...)
-    network_data = ParserPWF.parse_pwf_to_powermodels(file; software = software, add_control_data = add_control_data)
-    return run_pf(network_data, model_type, optimizer, model_constructor; kwargs...)
+function run_control_pf(file::String,optimizer; 
+                software = PWF.ANAREDE, kwargs...)
+                
+    model_type = ControlACPPowerModel
+    model_constructor = ControlPowerFlow.build_pf
+    network_data = PWF.parse_pwf_to_powermodels(file; software = software, add_control_data = true)
+    return _PM.run_model(network_data, model_type, optimizer, model_constructor; kwargs...)
 end
 
-function run_pf(network_data::Dict, model_type, optimizer, model_constructor::Function; kwargs...)
+function run_control_pf(network_data::Dict, optimizer; kwargs...)
+    model_type = ControlACPPowerModel
+    model_constructor = ControlACPPowerModel.build_pf
     return _PM.run_model(network_data, model_type, optimizer, model_constructor; kwargs...)
 end
 

@@ -3,12 +3,12 @@ using PowerModels
 using JuMP
 using Test
 using Ipopt
-
+using PWF
 # test parameters
 ipopt = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 0.0001, "print_level" => 0)
 tol = 1e-3
-anarede = ControlPowerFlow.ParserPWF.ANAREDE
-organon = ControlPowerFlow.ParserPWF.Organon
+anarede = PWF.ANAREDE
+organon = PWF.Organon
 
 @testset begin
     # control structure verifications

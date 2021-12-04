@@ -1,7 +1,7 @@
 @testset "Control from generic_info" begin
 
     file = joinpath(@__DIR__, "data/3busfrank_continuous_shunt.pwf")
-    data = ControlPowerFlow.ParserPWF.parse_pwf_to_powermodels(file; add_control_data = true)
+    data = PWF.parse_pwf_to_powermodels(file; add_control_data = true)
 
     generic_info = Dict{Any, Any}(
         :control_variables => Dict{Any, Any}(
@@ -142,15 +142,13 @@
     # Slack Variables 
     @test !haskey(var(pm), :sl_con_vol_mag_bou_upp)
     @test !haskey(var(pm), :sl_con_vol_mag_bou_low)
-    @test length(var(pm, :sl_con_vol_mag_set)) == 3
+    @test length(var(pm, :sl_con_vol_mag_set)) == 2
 
     set_optimizer(pm.model, ipopt)
     result = optimize_model!(pm)
 
     @test termination_status(pm.model) == MOI.LOCALLY_SOLVED
 
-    @test haskey(result["solution"]["bus"]["1"], "sl_con_vol_mag_set")
-    @test haskey(result["solution"]["bus"]["2"], "sl_con_vol_mag_set")
     @test haskey(result["solution"]["bus"]["3"], "sl_con_vol_mag_set")
     @test haskey(result["solution"]["shunt"]["1"], "bs")
     

@@ -1,5 +1,6 @@
 module ControlPowerFlow
 
+using PWF
 
 import JuMP
 import JuMP: @variable, @constraint, @NLconstraint, @objective, @NLobjective, @expression, @NLexpression
