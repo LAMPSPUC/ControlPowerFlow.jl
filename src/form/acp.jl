@@ -112,7 +112,7 @@ function expression_branch_power_ohms_yt_from(pm::ControlAbstractACPModel, n::In
     
     # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
-    tm² = tap^2 + 1e-5 # variable in denominator
+    tm² = tap^2 + 1e-8 # variable in denominator
     
     var(pm, n, :p)[f_idx] = JuMP.@NLexpression(pm.model,  (g+g_fr)/tm²*vm_fr^2 + (-g*(tap * cos(shift))+b*(tap * sin(shift)))/tm²*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*(tap * cos(shift))-g*(tap * sin(shift)))/tm²*(vm_fr*vm_to*sin(va_fr-va_to)) )
     var(pm, n, :q)[f_idx] = JuMP.@NLexpression(pm.model, -(b+b_fr)/tm²*vm_fr^2 - (-b*(tap * cos(shift))-g*(tap * sin(shift)))/tm²*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*(tap * cos(shift))+b*(tap * sin(shift)))/tm²*(vm_fr*vm_to*sin(va_fr-va_to)) )
@@ -130,7 +130,7 @@ function expression_branch_power_ohms_yt_to(pm::ControlAbstractACPModel, n::Int,
     
     # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
-    tm² = tap^2 + 1e-5
+    tm² = tap^2 + 1e-8 # variable in denominator
 
     var(pm, n, :p)[t_idx] = JuMP.@NLexpression(pm.model,  (g+g_to)*vm_to^2 + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(vm_to*vm_fr*sin(va_to-va_fr)) )
     var(pm, n, :q)[t_idx] = JuMP.@NLexpression(pm.model, -(b+b_to)*vm_to^2 - (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(vm_to*vm_fr*sin(va_to-va_fr)) )
