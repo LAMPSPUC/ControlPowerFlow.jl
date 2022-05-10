@@ -2,11 +2,11 @@ has_control_constraints(pm::_PM.AbstractPowerModel) = has_control(pm) && haskey(
 
 has_control_constraints(pm::_PM.AbstractPowerModel, constraint_name::String) = has_control_constraints(pm) && haskey(ref(pm, :control_info, :control_constraints), constraint_name)
 
-has_controlled_bus(pm::_PM.AbstractPowerModel) = has_control(pm) && haskey(ref(pm, :control_info), :cotrolled_bus) && ref(pm, :control_info, :cotrolled_bus)
+has_controlled_bus(pm::_PM.AbstractPowerModel) = has_control(pm) && haskey(ref(pm, :control_info), :controllable_bus) && ref(pm, :control_info, :controllable_bus)
 
 function controlled_bus(pm::_PM.AbstractPowerModel, i::Int, cont_key::String, key::String) 
     if has_controlled_bus(pm)
-        _PM.ref(pm, :bus, i, cont_key)
+        _PM.ref(pm, :bus, i, "control_data")[cont_key]
     else
         _PM.ref(pm, :bus, i, key)
     end
