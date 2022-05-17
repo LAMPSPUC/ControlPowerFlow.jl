@@ -12,28 +12,28 @@
                     "variable" => "generic_variable",
                     "element" => :bus, # key where the final value of the variable will be placed in the result dictionary
                     "indexes" => [1,2,3], # exact keys of the variables
-                    "start" => 0.0
+                    "start" => [0.0, 0.0, 0.0]
                 ),
                 "shunt" => Dict{Any, Any}(
                     "name" => "shunt",
                     "variable" => "bs",
                     "element" => :shunt,
                     "indexes" => [1],
-                    "start" => 0.0
+                    "start" => [0.0]
                 ),
                 "shift" => Dict{Any, Any}(
                     "name" => "shift",
                     "variable" => "shift",
                     "element" => :branch,
                     "indexes" => [1, 3],
-                    "start" => 0.0
+                    "start" => [0.0, 0.0]
                 ),
                 "tap" => Dict{Any, Any}(
                     "name" => "tap",
                     "variable" => "tap",
                     "element" => :branch,
                     "indexes" => [1],
-                    "start" => 0.0
+                    "start" => [0.0]
                 )
             ),
             :control_constraints => Dict{Any, Any}(
@@ -58,7 +58,7 @@
 
     ControlPowerFlow.set_control_info!(data, control_info)
 
-    pm = instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf)
+    pm = PowerModels.instantiate_model(data, ControlPowerFlow.ControlACPPowerModel, ControlPowerFlow.build_pf)
 
     # New Control Variables
     @test length(var(pm, :generic_variable)) == 3

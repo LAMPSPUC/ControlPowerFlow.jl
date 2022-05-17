@@ -112,8 +112,11 @@ function _verify_control_variables!(control_info::Dict)
         _verify_key!(control_info, :control_variables, k, "name", String)
         _verify_key!(control_info, :control_variables, k, "variable", String)
         _verify_key!(control_info, :control_variables, k, "element", Symbol)
-        _verify_key!(control_info, :control_variables, k, "start", Number)
+        _verify_key!(control_info, :control_variables, k, "start", Vector)
         _verify_key!(control_info, :control_variables, k, "indexes", Vector{Int})
+        if length(control_info[:control_variables][k]["start"]) != length(control_info[:control_variables][k]["indexes"])
+            @error(DimensionMismatch, "Start values must be given for all $k control variables.")
+        end
     end
 end
 
@@ -166,26 +169,50 @@ function _handle_control_info!(control_info::Dict)
     return true
 end
 
+function get_start_values_from_nw_ref(nw_ref::Dict, nw_start::Number, element::Symbol, variable::String, nw_indexes::Vector{Int})
+    start = Number[]
+    if isnan(nw_start)
+        for i in nw_indexes
+            push!(start, nw_ref[element][i][variable])
+        end
+    else
+        for i in nw_indexes
+            push!(start, nw_start)
+        end
+    end
+    return start
+end
+
 function _handle_control_variables!(nw_ref::Dict, info::Dict)    
     control_variables = nw_ref[:control_info][:control_variables]
     for (i, nw_info) in info
         name       = nw_info["name"]
         variable   = nw_info["variable"]
         element    = nw_info["element"]
-        start      = nw_info["start"]
         filters    = nw_info["filters"]
-        nw_indexes = ids_nw_ref(nw_ref, element; filters = filters)
+        nw_indexes = ControlPowerFlow.ids_nw_ref(nw_ref, element; filters = filters)
+        nw_start   = ControlPowerFlow.get_start_values_from_nw_ref(
+            nw_ref, nw_info["start"], 
+            element, variable, nw_indexes
+        )
         if haskey(control_variables, name)
+            old_indexes = control_variables[name]["indexes"]
             control_variables[name]["indexes"] = unique(vcat(
-                control_variables[name]["indexes"], 
+                old_indexes, 
                 nw_indexes
             ))
+
+            old_start = control_variables[name]["start"]
+            control_variables[name]["start"] = vcat(
+                old_start, 
+                nw_start[[findfirst(x->x==i, nw_indexes) for i in setdiff(nw_indexes, old_indexes)]]
+            )
         else
             nw_constraint = Dict{Any, Any}()
             nw_constraint["name"]     = name
             nw_constraint["variable"] = variable
             nw_constraint["element"]  = element
-            nw_constraint["start"]    = start
+            nw_constraint["start"]    = nw_start
             nw_constraint["indexes"]  = nw_indexes
             control_variables[name] = nw_constraint
         end
@@ -260,6 +287,7 @@ function _handle_control_info(pm::_PM.AbstractPowerModel)
     else
         _handle_control_info!(nw_ref[:control_info])
     end
+    # todo: generalize the creation of start values (now is a vector) for template actions
     if _has_actions(nw_ref) # control actions inside network -> data["info"]["action"]
         for code in keys(nw_ref[:info]["actions"])
             if _is_default_control(code) # if

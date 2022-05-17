@@ -27,7 +27,7 @@
                     "variable" => "generic_name",
                     "indexes" => collect(1:10),
                     "element" => :bus,
-                    "start" => 0.0
+                    "start" => [0.0 for i in 1:10]
                 )
             ),
             :control_constraints => Dict{Any, Any}(
@@ -112,7 +112,7 @@
                     "name"     => "shunt",
                     "variable" => "bs",
                     "element"  => :shunt,
-                    "start"    => 0.0,
+                    "start"    => 0.0, # if this is NaN, the code automatic gets the start values from the data (data -> element -> variable)
                     "filters" => [
                         (shunt, nw_ref) -> _control_data(shunt)["shunt_type"] == 2 # variable shunt
                     ],
