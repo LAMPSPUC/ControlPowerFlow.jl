@@ -1,4 +1,4 @@
-@testset "Anarede Defaults" begin
+@testset "ACP Model" begin
     tol = 1e-3
     @testset "qlim" begin
         file = joinpath(@__DIR__, "data/anarede/3busfrank_qlim.pwf")
