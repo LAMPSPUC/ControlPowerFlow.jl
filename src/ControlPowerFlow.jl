@@ -29,6 +29,7 @@ include("core/expression_template.jl")
 include("core/objective.jl")
 include("core/variable.jl")
 
+include("form/acr.jl")
 include("form/acp.jl")
 include("form/shared.jl")
 

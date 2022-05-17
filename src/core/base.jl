@@ -4,6 +4,12 @@ const bus_key = Dict(:shunt => "shunt_bus", :gen => "gen_bus", :load => "load_bu
 abstract type ControlAbstractModel <: _PM.AbstractPowerModel end
 
 ""
+abstract type ControlAbstractACRModel <: ControlAbstractModel end
+
+""
+mutable struct ControlACRPowerModel <: ControlAbstractACRModel @pm_fields end
+
+""
 abstract type ControlAbstractACPModel <: ControlAbstractModel end
 
 ""
