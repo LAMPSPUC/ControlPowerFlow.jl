@@ -137,3 +137,40 @@ function expression_branch_power_ohms_yt_to(pm::ControlAbstractACRModel, n::Int,
     var(pm, n, :p)[t_idx] = @NLexpression(pm.model, (g+g_to)*(vr_to^2 + vi_to^2) + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(vr_fr*vr_to + vi_fr*vi_to) + (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(-(vi_fr*vr_to - vr_fr*vi_to)))
     var(pm, n, :q)[t_idx] = @NLexpression(pm.model, -(b+b_to)*(vr_to^2 + vi_to^2) - (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(vr_fr*vr_to + vi_fr*vi_to) + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(-(vi_fr*vr_to - vr_fr*vi_to)))
 end
+
+
+# Control constraints
+
+""
+function constraint_voltage_magnitude_bounds(pm::ControlAbstractACRModel, n::Int, i::Int, vmax::Float64, vmin::Float64)
+    vr = var(pm, n)[:vr][i]
+    vi = var(pm, n)[:vi][i]
+
+    vm² = vr^2 + vi^2
+    up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_magnitude_bounds")
+
+    JuMP.@constraint(
+        pm.model, vm² >= vmin^2 - low
+    )
+
+    JuMP.@constraint(
+        pm.model, vm² <= vmax + up
+    )
+end
+
+""
+function constraint_voltage_angle_bounds(pm::ControlAbstractACRModel, n::Int, i::Int, vamax::Float64, vamin::Float64)
+    vm = ref(pm, n, :bus, i, "vm")
+
+    vi = var(pm, n)[:vi][i]
+
+    up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_angle_bounds")
+
+    JuMP.@constraint(
+        pm.model, vi >= vm*sin(vamin) - low
+    )
+
+    JuMP.@constraint(
+        pm.model, vi <= vm*sin(vamax) + up
+    )
+end
