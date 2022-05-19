@@ -22,7 +22,7 @@ organon = PWF.Organon
     @testset "Anarede Controls" begin
         include("anarede_acp.jl")
         include("anarede_acr.jl")
-        # include("anarede_ivr.jl")
+        include("anarede_ivr.jl")
     end
     # create control from custom defaults
     include("custom.jl")

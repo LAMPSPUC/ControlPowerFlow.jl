@@ -171,3 +171,71 @@ function constraint_dcline_setpoint_active(pm::ControlAbstractModel, i::Int; nw:
     constraint_dcline_setpoint_active_fr(pm, nw, f_idx, t_idx, pf, pt)
     constraint_dcline_setpoint_active_to(pm, nw, f_idx, t_idx, pf, pt)
 end
+
+
+##### IVR #####
+
+""
+function constraint_current_balance(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
+    bus = ref(pm, nw, :bus, i)
+    bus_arcs = ref(pm, nw, :bus_arcs, i)
+    bus_arcs_dc = ref(pm, nw, :bus_arcs_dc, i)
+    bus_gens = ref(pm, nw, :bus_gens, i)
+    bus_loads = ref(pm, nw, :bus_loads, i)
+    bus_shunts = ref(pm, nw, :bus_shunts, i)
+
+    bus_pd = Dict(k => ref(pm, nw, :load, k, "pd") for k in bus_loads)
+    bus_qd = Dict(k => ref_or_var(pm, nw, k, :load, "qd") for k in bus_loads)
+
+    bus_gs = Dict(k => ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
+    bus_bs = Dict(k => ref_or_var(pm, nw, k, :shunt, "bs") for k in bus_shunts)
+
+    constraint_current_balance_real(pm, nw, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+    constraint_current_balance_imaginary(pm, nw, i, bus_arcs, bus_arcs_dc, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+end
+
+""
+function constraint_current_from(pm::ControlAbstractIVRModel, i::Int; nw::Int=nw_id_default)
+    branch = ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+
+    tr, ti = _PM.calc_branch_t(branch)
+    g_fr = branch["g_fr"]
+    b_fr = branch["b_fr"]
+    tm = branch["tap"]
+
+    constraint_current_from(pm, nw, f_bus, f_idx, g_fr, b_fr, tr, ti, tm, i)
+end
+
+""
+function constraint_current_to(pm::ControlAbstractIVRModel, i::Int; nw::Int=nw_id_default)
+    branch = ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    t_idx = (i, t_bus, f_bus)
+
+    tr, ti = _PM.calc_branch_t(branch)
+    g_to = branch["g_to"]
+    b_to = branch["b_to"]
+    tm = branch["tap"]
+
+    constraint_current_to(pm, nw, t_bus, f_idx, t_idx, g_to, b_to, i)
+end
+
+""
+function constraint_voltage_drop(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
+    branch = ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+
+    tr, ti = _PM.calc_branch_t(branch)
+    r = branch["br_r"]
+    x = branch["br_x"]
+    tm = branch["tap"]
+
+    constraint_voltage_drop(pm, nw, i, f_bus, t_bus, f_idx, r, x, tr, ti, tm)
+end

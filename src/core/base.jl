@@ -10,6 +10,12 @@ abstract type ControlAbstractACRModel <: ControlAbstractModel end
 mutable struct ControlACRPowerModel <: ControlAbstractACRModel @pm_fields end
 
 ""
+abstract type ControlAbstractIVRModel <: ControlAbstractACRModel end
+
+""
+mutable struct ControlIVRPowerModel <: ControlAbstractIVRModel @pm_fields end
+
+""
 abstract type ControlAbstractACPModel <: ControlAbstractModel end
 
 ""
