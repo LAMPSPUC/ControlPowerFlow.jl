@@ -20,14 +20,14 @@ end
 
 function create_control_variables(
     pm::_PM.AbstractPowerModel, nw::Int, report::Bool, 
-    control_name::String, var_name::String, el_sym::Symbol, start_val::Float64)
+    control_name::String, var_name::String, el_sym::Symbol, start_val::Vector)
 
     control_ids = ref(pm, nw, :control_info, :control_variables)[control_name]["indexes"]
 
     if !isempty(control_ids)
         control = var(pm, nw)[Symbol(var_name)] = JuMP.@variable(pm.model,
             [i in control_ids], base_name="$(nw)_"*var_name,
-            start = ControlPowerFlow._PM.comp_start_value(ref(pm, nw, el_sym, i), var_name*"_start", start_val) 
+            start = ControlPowerFlow._PM.comp_start_value(ref(pm, nw, el_sym, i), var_name*"_start", start_val)[findfirst(x->x==i, control_ids)[1]] 
         )
         
         report && _PM.sol_component_value(pm, nw, el_sym, Symbol(var_name), control_ids, control)

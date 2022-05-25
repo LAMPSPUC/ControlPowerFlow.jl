@@ -30,9 +30,12 @@ include("core/objective.jl")
 include("core/variable.jl")
 
 include("form/acp.jl")
+include("form/acr.jl")
+include("form/iv.jl")
 include("form/shared.jl")
 
 include("prob/pf.jl")
+include("prob/pf_iv.jl")
 
 # including control actions defaults 
 # Brazilian ANAREDE control actions
