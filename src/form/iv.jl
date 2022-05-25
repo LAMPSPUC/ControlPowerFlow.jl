@@ -194,8 +194,8 @@ function constraint_voltage_drop(pm::ControlAbstractIVRModel, n::Int, i, f_bus, 
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
     tm² = tap^2 + 1e-8 # variable in denominator
 
-    JuMP.@NLconstraint(pm.model, vr_to == (vr_fr*tr + vi_fr*ti)/tm² - r*csr_fr + x*csi_fr)
-    JuMP.@NLconstraint(pm.model, vi_to == (vi_fr*tr - vr_fr*ti)/tm² - r*csi_fr - x*csr_fr)
+    JuMP.@NLconstraint(pm.model, vr_to == (vr_fr*tap*cos(shift) + vi_fr*tap*sin(shift))/tm² - r*csr_fr + x*csi_fr)
+    JuMP.@NLconstraint(pm.model, vi_to == (vi_fr*tap*cos(shift) - vr_fr*tap*sin(shift))/tm² - r*csi_fr - x*csr_fr)
 end
 
 "`pg[i] == pg`"

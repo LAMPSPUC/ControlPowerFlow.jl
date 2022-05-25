@@ -174,3 +174,9 @@ function constraint_voltage_angle_bounds(pm::ControlAbstractACRModel, n::Int, i:
         pm.model, vi <= vm*sin(vamax) + up
     )
 end
+
+
+""
+function sol_data_model!(pm::ControlAbstractACRModel, solution::Dict)
+    _PM.apply_pm!(_PM._sol_data_model_acr!, solution)
+end
