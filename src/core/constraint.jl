@@ -149,35 +149,6 @@ function constraint_shift_ratio_bounds(pm::ControlAbstractModel,  n::Int, i::Int
     )
 end
 
-""
-function constraint_voltage_magnitude_bounds(pm::ControlAbstractModel, n::Int, i::Int, vmax::Float64, vmin::Float64)
-    vm = var(pm, n)[:vm][i]
-
-    up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_magnitude_bounds")
-
-    JuMP.@constraint(
-        pm.model, vm >= vmin - low
-    )
-
-    JuMP.@constraint(
-        pm.model, vm <= vmax + up
-    )
-end
-
-""
-function constraint_voltage_angle_bounds(pm::ControlAbstractModel, n::Int, i::Int, vamax::Float64, vamin::Float64)
-    va = var(pm, n)[:va][i]
-
-    up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_angle_bounds")
-
-    JuMP.@constraint(
-        pm.model, va >= vamin - low
-    )
-
-    JuMP.@constraint(
-        pm.model, va <= vamax + up
-    )
-end
 
 ""
 function constraint_shunt_setpoint(pm::ControlAbstractModel, n::Int, i::Int, shunt::Dict)

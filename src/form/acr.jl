@@ -1,11 +1,12 @@
 ""
-function variable_bus_voltage(pm::ControlAbstractACPModel; kwargs...)
-    _PM.variable_bus_voltage_angle(pm; kwargs...)
-    _PM.variable_bus_voltage_magnitude(pm; kwargs...)
+function variable_bus_voltage(pm::ControlAbstractACRModel; kwargs...)
+    _PM.variable_bus_voltage_real(pm; kwargs...)
+    _PM.variable_bus_voltage_imaginary(pm; kwargs...)
 end
 
-function constraint_power_balance_active(pm::ControlAbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-    vm   = var(pm, n, :vm, i)
+function constraint_power_balance_active(pm::ControlAbstractACRModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
+    vr = var(pm, n, :vr, i)
+    vi = var(pm, n, :vi, i)
     p    = get(var(pm, n),    :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
     q    = get(var(pm, n),    :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
     pg   = get(var(pm, n),   :pg, Dict()); _PM._check_var_keys(pg, bus_gens, "active power", "generator")
@@ -16,12 +17,6 @@ function constraint_power_balance_active(pm::ControlAbstractACPModel, n::Int, i:
     qsw  = get(var(pm, n),  :qsw, Dict()); _PM._check_var_keys(qsw, bus_arcs_sw, "reactive power", "switch")
     p_dc = get(var(pm, n), :p_dc, Dict()); _PM._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
     q_dc = get(var(pm, n), :q_dc, Dict()); _PM._check_var_keys(q_dc, bus_arcs_dc, "reactive power", "dcline")
-    
-    # the check "typeof(p[arc]) <: JuMP.NonlinearExpression" is required for the
-    # case when p/q are nonlinear expressions instead of decision variables
-    # once NLExpressions are first order in JuMP it should be possible to
-    # remove this.
-    # nl_form = length(bus_arcs) > 0 && (typeof(p[iterate(bus_arcs)[1]]) <: JuMP.NonlinearExpression)
 
     slack = slack_in_equality_constraint(pm, n, i, "constraint_power_balance_active")
 
@@ -32,19 +27,19 @@ function constraint_power_balance_active(pm::ControlAbstractACPModel, n::Int, i:
         ==
         sum(pg[g] for g in bus_gens)
         - sum(ps[s] for s in bus_storage)
-        - sum(pd for (i,pd) in bus_pd)
-        - sum(gs for (i,gs) in bus_gs)*vm^2
+        - sum(pd for pd in values(bus_pd))
+        - sum(gs for gs in values(bus_gs))*(vr^2 + vi^2)
         + slack
     )
-
 
     if _IM.report_duals(pm)
         sol(pm, n, :bus, i)[:lam_kcl_r] = cstr_p
     end
 end
 
-function constraint_power_balance_reactive(pm::ControlAbstractACPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-    vm   = var(pm, n, :vm, i)
+function constraint_power_balance_reactive(pm::ControlAbstractACRModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
+    vr = var(pm, n, :vr, i)
+    vi = var(pm, n, :vi, i)
     p    = get(var(pm, n),    :p, Dict()); _PM._check_var_keys(p, bus_arcs, "active power", "branch")
     q    = get(var(pm, n),    :q, Dict()); _PM._check_var_keys(q, bus_arcs, "reactive power", "branch")
     pg   = get(var(pm, n),   :pg, Dict()); _PM._check_var_keys(pg, bus_gens, "active power", "generator")
@@ -56,12 +51,6 @@ function constraint_power_balance_reactive(pm::ControlAbstractACPModel, n::Int, 
     p_dc = get(var(pm, n), :p_dc, Dict()); _PM._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
     q_dc = get(var(pm, n), :q_dc, Dict()); _PM._check_var_keys(q_dc, bus_arcs_dc, "reactive power", "dcline")
 
-    # the check "typeof(p[arc]) <: JuMP.NonlinearExpression" is required for the
-    # case when p/q are nonlinear expressions instead of decision variables
-    # once NLExpressions are first order in JuMP it should be possible to
-    # remove this.
-    # nl_form = length(bus_arcs) > 0 && (typeof(p[iterate(bus_arcs)[1]]) <: JuMP.NonlinearExpression)
-
     slack = slack_in_equality_constraint(pm, n, i, "constraint_power_balance_reactive")
 
     cstr_q = JuMP.@NLconstraint(pm.model,
@@ -71,8 +60,8 @@ function constraint_power_balance_reactive(pm::ControlAbstractACPModel, n::Int, 
         ==
         sum(qg[g] for g in bus_gens)
         - sum(qs[s] for s in bus_storage)
-        - sum(qd for (i,qd) in bus_qd)
-        + sum(bs for (i,bs) in bus_bs)*vm^2
+        - sum(qd for qd in values(bus_qd))
+        + sum(bs for bs in values(bus_bs))*(vr^2 + vi^2)
         + slack
     )
 
@@ -82,47 +71,61 @@ function constraint_power_balance_reactive(pm::ControlAbstractACPModel, n::Int, 
 end
 
 "`v[i] == vm`"
-function constraint_voltage_magnitude_setpoint(pm::ControlAbstractACPModel, n::Int, i::Int, vm)
-    v = var(pm, n, :vm, i)
+function constraint_voltage_magnitude_setpoint(pm::ControlAbstractACRModel, n::Int, i, vm)
+    vr = var(pm, n, :vr, i)
+    vi = var(pm, n, :vi, i)
 
     slack = slack_in_equality_constraint(pm, n, i, "constraint_voltage_magnitude_setpoint")
 
-    JuMP.@constraint(pm.model, v == vm + slack)
+    JuMP.@constraint(pm.model, (vr^2 + vi^2) == vm^2 + slack)
 end
 
-"`v[i] == vm`"
-function constraint_voltage_angle_setpoint(pm::ControlAbstractACPModel, n::Int, i::Int, va)
-    v = var(pm, n, :va, i)
+
+"reference bus angle constraint"
+function constraint_theta_ref(pm::ControlAbstractACRModel, n::Int, i::Int, va)
+    va = ref(pm, n, :bus, i, "va")
+    vm = ref(pm, n, :bus, i, "vm")
+
+    slack = slack_in_equality_constraint(pm, n, i, "constraint_theta_ref")
+
+    JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == vm*sin(va) + slack)
+end
+
+"reference bus angle constraint"
+function constraint_voltage_angle_setpoint(pm::ControlAbstractACRModel, n::Int, i::Int)
+    va = ref(pm, n, :bus, i, "va")
+    vm = ref(pm, n, :bus, i, "vm")
 
     slack = slack_in_equality_constraint(pm, n, i, "constraint_voltage_angle_setpoint")
 
-    JuMP.@constraint(pm.model, v == va + slack)
+    JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == vm*sin(va) + slack)
 end
 
 ""
-function expression_branch_power_ohms_yt_from(pm::ControlAbstractACPModel, n::Int, f_bus, t_bus, f_idx, t_idx, g, b, g_fr, b_fr, i::Int)
-    vm_fr = var(pm, n, :vm, f_bus)
-    vm_to = var(pm, n, :vm, t_bus)
-    va_fr = var(pm, n, :va, f_bus)
-    va_to = var(pm, n, :va, t_bus)
+function expression_branch_power_ohms_yt_from(pm::ControlAbstractACRModel, n::Int, f_bus, t_bus, f_idx, t_idx, g, b, g_fr, b_fr, i::Int)
+    vr_fr = var(pm, n, :vr, f_bus)
+    vr_to = var(pm, n, :vr, t_bus)
+    vi_fr = var(pm, n, :vi, f_bus)
+    vi_to = var(pm, n, :vi, t_bus)
 
     tap   = ref_or_var(pm, n, i, :branch, "tap")
-    shift = ref_or_var(pm, n, i,  :branch, "shift")
-    
+    shift = ref_or_var(pm, n, i, :branch, "shift")
+
     # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
     tm² = tap^2 + 1e-8 # variable in denominator
     
-    var(pm, n, :p)[f_idx] = JuMP.@NLexpression(pm.model,  (g+g_fr)/tm²*vm_fr^2 + (-g*(tap * cos(shift))+b*(tap * sin(shift)))/tm²*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*(tap * cos(shift))-g*(tap * sin(shift)))/tm²*(vm_fr*vm_to*sin(va_fr-va_to)) )
-    var(pm, n, :q)[f_idx] = JuMP.@NLexpression(pm.model, -(b+b_fr)/tm²*vm_fr^2 - (-b*(tap * cos(shift))-g*(tap * sin(shift)))/tm²*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*(tap * cos(shift))+b*(tap * sin(shift)))/tm²*(vm_fr*vm_to*sin(va_fr-va_to)) )
+    var(pm, n, :p)[f_idx] = @NLexpression(pm.model, (g+g_fr)/tm²*(vr_fr^2 + vi_fr^2) + (-g*(tap * cos(shift))+b*(tap * sin(shift)))/tm²*(vr_fr*vr_to + vi_fr*vi_to) + (-b*(tap * cos(shift))-g*(tap * sin(shift)))/tm²*(vi_fr*vr_to - vr_fr*vi_to))
+    var(pm, n, :q)[f_idx] = @NLexpression(pm.model, -(b+b_fr)/tm²*(vr_fr^2 + vi_fr^2) - (-b*(tap * cos(shift))-g*(tap * sin(shift)))/tm²*(vr_fr*vr_to + vi_fr*vi_to) + (-g*(tap * cos(shift))+b*(tap * sin(shift)))/tm²*(vi_fr*vr_to - vr_fr*vi_to))
 end
 
+
 ""
-function expression_branch_power_ohms_yt_to(pm::ControlAbstractACPModel, n::Int, f_bus, t_bus, f_idx, t_idx, g, b, g_to, b_to, i::Int)
-    vm_fr = var(pm, n, :vm, f_bus)
-    vm_to = var(pm, n, :vm, t_bus)
-    va_fr = var(pm, n, :va, f_bus)
-    va_to = var(pm, n, :va, t_bus)
+function expression_branch_power_ohms_yt_to(pm::ControlAbstractACRModel, n::Int, f_bus, t_bus, f_idx, t_idx, g, b, g_to, b_to, i::Int)
+    vr_fr = var(pm, n, :vr, f_bus)
+    vr_to = var(pm, n, :vr, t_bus)
+    vi_fr = var(pm, n, :vi, f_bus)
+    vi_to = var(pm, n, :vi, t_bus)
 
     tap   = ref_or_var(pm, n, i, :branch, "tap")
     shift = ref_or_var(pm, n, i, :branch, "shift")
@@ -131,40 +134,49 @@ function expression_branch_power_ohms_yt_to(pm::ControlAbstractACPModel, n::Int,
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
     tm² = tap^2 + 1e-8 # variable in denominator
 
-    var(pm, n, :p)[t_idx] = JuMP.@NLexpression(pm.model,  (g+g_to)*vm_to^2 + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(vm_to*vm_fr*sin(va_to-va_fr)) )
-    var(pm, n, :q)[t_idx] = JuMP.@NLexpression(pm.model, -(b+b_to)*vm_to^2 - (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(vm_to*vm_fr*sin(va_to-va_fr)) )
+    var(pm, n, :p)[t_idx] = @NLexpression(pm.model, (g+g_to)*(vr_to^2 + vi_to^2) + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(vr_fr*vr_to + vi_fr*vi_to) + (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(-(vi_fr*vr_to - vr_fr*vi_to)))
+    var(pm, n, :q)[t_idx] = @NLexpression(pm.model, -(b+b_to)*(vr_to^2 + vi_to^2) - (-b*(tap * cos(shift))+g*(tap * sin(shift)))/tm²*(vr_fr*vr_to + vi_fr*vi_to) + (-g*(tap * cos(shift))-b*(tap * sin(shift)))/tm²*(-(vi_fr*vr_to - vr_fr*vi_to)))
 end
 
 
-
-## Control constraints
+# Control constraints
 
 ""
-function constraint_voltage_magnitude_bounds(pm::ControlAbstractPolarModels, n::Int, i::Int, vmax::Float64, vmin::Float64)
-    vm = var(pm, n)[:vm][i]
+function constraint_voltage_magnitude_bounds(pm::ControlAbstractACRModel, n::Int, i::Int, vmax::Float64, vmin::Float64)
+    vr = var(pm, n)[:vr][i]
+    vi = var(pm, n)[:vi][i]
 
+    vm² = vr^2 + vi^2
     up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_magnitude_bounds")
 
     JuMP.@constraint(
-        pm.model, vm >= vmin - low
+        pm.model, vm² >= vmin^2 - low
     )
 
     JuMP.@constraint(
-        pm.model, vm <= vmax + up
+        pm.model, vm² <= vmax + up
     )
 end
 
 ""
-function constraint_voltage_angle_bounds(pm::ControlAbstractPolarModels, n::Int, i::Int, vamax::Float64, vamin::Float64)
-    va = var(pm, n)[:va][i]
+function constraint_voltage_angle_bounds(pm::ControlAbstractACRModel, n::Int, i::Int, vamax::Float64, vamin::Float64)
+    vm = ref(pm, n, :bus, i, "vm")
+
+    vi = var(pm, n)[:vi][i]
 
     up, low = slack_in_bound_constraint(pm, n, i, "constraint_voltage_angle_bounds")
 
     JuMP.@constraint(
-        pm.model, va >= vamin - low
+        pm.model, vi >= vm*sin(vamin) - low
     )
 
     JuMP.@constraint(
-        pm.model, va <= vamax + up
+        pm.model, vi <= vm*sin(vamax) + up
     )
+end
+
+
+""
+function sol_data_model!(pm::ControlAbstractACRModel, solution::Dict)
+    _PM.apply_pm!(_PM._sol_data_model_acr!, solution)
 end
