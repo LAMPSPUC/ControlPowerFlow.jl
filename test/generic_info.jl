@@ -75,7 +75,7 @@
     
 
     # New Control Variables
-    @test length(var(pm, :bs)) == 1
+    @test length(var(pm, :bs)) == 2
     @test !haskey(var(pm), :tap)
     @test !haskey(var(pm), :shift)
     
@@ -105,7 +105,7 @@
     
 
     # New Control Variables
-    @test length(var(pm, :bs)) == 1
+    @test length(var(pm, :bs)) == 2
     @test !haskey(var(pm), :tap)
     @test !haskey(var(pm), :shift)
     
@@ -135,7 +135,7 @@
     
 
     # New Control Variables
-    @test length(var(pm, :bs)) == 1
+    @test length(var(pm, :bs)) == 2
     @test !haskey(var(pm), :tap)
     @test !haskey(var(pm), :shift)
     
