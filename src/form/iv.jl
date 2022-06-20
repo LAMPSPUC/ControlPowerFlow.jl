@@ -357,10 +357,10 @@ function expression_branch_current_from_performance(pm::ControlAbstractIVRModel,
 
     # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
-    tm² = tap^2 + 1e-8 # variable in denominator
-
-    var(pm, n, :cr)[f_idx] = JuMP.@NLexpression(pm.model, (tap*cos(shift)*csr_fr - tap*sin(shift)*csi_fr + g_sh_fr*vr_fr - b_sh_fr*vi_fr)/tm²)
-    var(pm, n, :ci)[f_idx] = JuMP.@NLexpression(pm.model, (tap*cos(shift)*csi_fr + tap*sin(shift)*csr_fr + g_sh_fr*vi_fr + b_sh_fr*vr_fr)/tm²)
+    tm² = tap^2 + 1e-8  # variable in denominator
+    tm  = tap   + 1e-5  # variable in denominator
+    var(pm, n, :cr)[f_idx] = JuMP.@NLexpression(pm.model, (cos(shift)*csr_fr)/tm - (sin(shift)*csi_fr)/tm + (g_sh_fr*vr_fr - b_sh_fr*vi_fr)/tm²)
+    var(pm, n, :ci)[f_idx] = JuMP.@NLexpression(pm.model, (cos(shift)*csi_fr)/tm + (sin(shift)*csr_fr)/tm + (g_sh_fr*vi_fr + b_sh_fr*vr_fr)/tm²)
 end
 
 """
@@ -392,8 +392,8 @@ function expression_branch_current_series_performance(pm::ControlAbstractIVRMode
     
     # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
-    tm² = tap^2 + 1e-8 # variable in denominator
-
-    var(pm, n, :csr)[f_idx[1]] = JuMP.@NLexpression(pm.model, ( vr_fr*((tap*cos(shift))*r - (tap*sin(shift))*x) + vi_fr*((tap*cos(shift))*x + (tap*sin(shift))*r) - vr_to*tm²*r - vi_to*tm²*x)/(tm²*zm^2))
-    var(pm, n, :csi)[f_idx[1]] = JuMP.@NLexpression(pm.model, (-vr_fr*((tap*cos(shift))*x + (tap*sin(shift))*r) + vi_fr*((tap*cos(shift))*r - (tap*sin(shift))*x) + vr_to*tm²*x - vi_to*tm²*r)/(tm²*zm^2))
+    tm² = tap^2 + 1e-8  # variable in denominator
+    tm  = tap   + 1e-5  # variable in denominator
+    var(pm, n, :csr)[f_idx[1]] = JuMP.@NLexpression(pm.model, ( vr_fr*((cos(shift))*r - (sin(shift))*x)/tm + vi_fr*((cos(shift))*x + (sin(shift))*r)/tm - vr_to*r - vi_to*x)/(zm^2))
+    var(pm, n, :csi)[f_idx[1]] = JuMP.@NLexpression(pm.model, (-vr_fr*((cos(shift))*x + (sin(shift))*r)/tm + vi_fr*((cos(shift))*r - (sin(shift))*x)/tm + vr_to*x - vi_to*r)/(zm^2))
 end
