@@ -3,7 +3,8 @@ using PowerModels
 using JuMP
 using Test
 using Ipopt
-using PWF
+
+include("../../PWF.jl/src/PWF.jl")
 
 # test parameters
 ipopt = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 0.0001, "print_level" => 0)

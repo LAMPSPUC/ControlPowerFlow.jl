@@ -1,6 +1,6 @@
 module ControlPowerFlow
 
-using PWF
+# using PWF
 
 import JuMP
 import JuMP: @variable, @constraint, @NLconstraint, @objective, @NLobjective, @expression, @NLexpression
@@ -11,7 +11,8 @@ const _IM = InfrastructureModels
 import PowerModels; const _PM = PowerModels
 import PowerModels: ids, ref, var, con, sol, nw_ids, nw_id_default, pm_component_status, @pm_fields
 
-import PWF: bus_type_num_to_str, bus_type_num_to_str, element_status
+include("../../PWF.jl/src/PWF.jl")
+# import PWF: bus_type_num_to_str, bus_type_num_to_str, element_status
 
 function silence()
     Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
