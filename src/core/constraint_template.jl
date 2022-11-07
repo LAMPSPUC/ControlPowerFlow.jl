@@ -225,6 +225,21 @@ function constraint_current_to(pm::ControlAbstractIVRModel, i::Int; nw::Int=nw_i
     constraint_current_to(pm, nw, t_bus, f_idx, t_idx, g_to, b_to, i)
 end
 
+function constraint_current_to_perf(pm::ControlAbstractIVRModel, i::Int; nw::Int=nw_id_default)
+    branch = ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    t_idx = (i, t_bus, f_bus)
+
+    tr, ti = _PM.calc_branch_t(branch)
+    g_to = branch["g_to"]
+    b_to = branch["b_to"]
+    tm = branch["tap"]
+
+    constraint_current_to_perf(pm, nw, t_bus, f_idx, t_idx, g_to, b_to, i)
+end
+
 ""
 function constraint_voltage_drop(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, i)
@@ -238,4 +253,26 @@ function constraint_voltage_drop(pm::ControlAbstractModel, i::Int; nw::Int=nw_id
     tm = branch["tap"]
 
     constraint_voltage_drop(pm, nw, i, f_bus, t_bus, f_idx, r, x, tr, ti, tm)
+end
+
+function constraint_current_from_voltage_drop(pm::ControlAbstractIVRModel, i::Int; nw::Int=nw_id_default)
+    branch = ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+
+    # tr, ti = _PM.calc_branch_t(branch)
+    g_fr = branch["g_fr"]
+    b_fr = branch["b_fr"]
+    # tm = branch["tap"]
+
+    branch = ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+
+    r = branch["br_r"]
+    x = branch["br_x"]
+    
+    constraint_current_from_voltage_drop(pm, nw, i, f_bus, t_bus, f_idx, r, x, g_fr, b_fr)
 end

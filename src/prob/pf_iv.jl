@@ -6,6 +6,14 @@ function variables_iv(pm::ControlAbstractModel)
     variable_dcline_current(pm, bounded = false)
 end
 
+function variables_iv_perf(pm::ControlAbstractModel)
+    variable_bus_voltage(pm, bounded = false)
+    variable_branch_current_perf(pm, bounded = false)
+
+    variable_gen_current(pm, bounded = false)
+    variable_dcline_current(pm, bounded = false)
+end
+
 function constraint_ref_bus_iv(pm::ControlAbstractModel)
     for (i,bus) in ref(pm, :ref_buses)
         @assert bus["bus_type"] == 3
@@ -50,11 +58,17 @@ function constraint_bus_iv(pm::ControlAbstractModel)
     end
 end
 
+function constraint_branch_iv_perf(pm::ControlAbstractModel)
+    for i in ids(pm, :branch)
+        constraint_current_to_perf(pm, i)
+        constraint_current_from_voltage_drop(pm, i)
+    end
+end
+
 function constraint_branch_iv(pm::ControlAbstractModel)
     for i in ids(pm, :branch)
         constraint_current_from(pm, i)
         constraint_current_to(pm, i)
-
         constraint_voltage_drop(pm, i)
     end
 end
@@ -87,16 +101,39 @@ function constraints_iv(pm::ControlAbstractModel)
     constraint_dcline_iv(pm)
 end
 
+function constraints_iv_perf(pm::ControlAbstractModel)
+    # Reference bus constraints
+    constraint_ref_bus_iv(pm)
+    # Bus constraints
+    constraint_bus_iv(pm)
+    # Branch constraints
+    constraint_branch_iv_perf(pm)
+    # DC branch constraints
+    constraint_dcline_iv(pm)
+end
+
 function build_pf_iv(pm::ControlAbstractModel)
     _handle_control_info(pm)
     # Create model variables
     variables_iv(pm)
     # Create additional control variables
     control_variables(pm)
-    # Create JuMP expressions
-    # expressions_iv(pm)
     # Define model constraints
     constraints_iv(pm)
+    # Define additional control constraints
+    control_constraints(pm)
+    # Define model objective function
+    objective(pm)
+end
+
+function build_pf_iv_perf(pm::ControlAbstractModel)
+    _handle_control_info(pm)
+    # Create model variables
+    variables_iv_perf(pm)
+    # Create additional control variables
+    control_variables(pm)
+    # Define model constraints
+    constraints_iv_perf(pm)
     # Define additional control constraints
     control_constraints(pm)
     # Define model objective function

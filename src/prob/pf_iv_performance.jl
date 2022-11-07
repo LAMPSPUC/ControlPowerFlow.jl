@@ -71,14 +71,24 @@ function constraint_branch_iv_performance(pm::ControlAbstractModel)
     # end
 end
 
-function expressions_iv_performance(pm::ControlAbstractModel)
+#= function expressions_iv_performance(pm::ControlAbstractModel)
     # current flow expressions
     for i in ids(pm, :branch)
         expression_branch_current_series_performance(pm, i)
         expression_branch_current_from_performance(pm, i)
         expression_branch_current_to_performance(pm, i)
     end
+end =#
+function expressions_iv_performance(pm::ControlAbstractModel)
+    # current flow expressions
+    for i in ids(pm, :branch)
+        expression_branch_current_series_current_from_performance(pm, i)
+        # expression_branch_current_series_performance(pm, i)
+        # expression_branch_current_from_performance(pm, i)
+        expression_branch_current_to_performance(pm, i)
+    end
 end
+
 
 function constraint_dcline_iv_performance(pm::ControlAbstractModel)
     for (i,dcline) in ref(pm, :dcline)

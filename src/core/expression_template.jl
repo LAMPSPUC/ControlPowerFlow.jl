@@ -45,6 +45,40 @@ end
 
 
 #### IVR
+function expression_branch_current_series_current_from_performance(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)
+    if !haskey(var(pm, nw), :csr)
+        var(pm, nw)[:csr] = Dict{Int,Any}()
+    end
+    if !haskey(var(pm, nw), :csi)
+        var(pm, nw)[:csi] = Dict{Int,Any}()
+    end
+
+    branch = _PM.ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+
+    #= tr, ti = _PM.calc_branch_t(branch)
+    tm = branch["tap"] =#
+    r = branch["br_r"]
+    x = branch["br_x"]
+
+    if !haskey(var(pm, nw), :cr)
+        var(pm, nw)[:cr] = Dict{Tuple{Int,Int,Int},Any}()
+    end
+    if !haskey(var(pm, nw), :ci)
+        var(pm, nw)[:ci] = Dict{Tuple{Int,Int,Int},Any}()
+    end
+
+    t_idx = (i, t_bus, f_bus)
+
+    g, b = _PM.calc_branch_y(branch)
+    g_fr = branch["g_fr"]
+    b_fr = branch["b_fr"]
+    
+    expression_branch_current_series_current_from_performance(pm, nw, i, f_bus, t_bus, f_idx, r, x, g_fr, b_fr)
+end
+
 
 ""
 function expression_branch_current_from_performance(pm::ControlAbstractModel, i::Int; nw::Int=nw_id_default)

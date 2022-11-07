@@ -33,6 +33,40 @@ function variable_branch_current(pm::ControlAbstractIVRModel; nw::Int=nw_id_defa
 end
 
 ""
+function variable_branch_current_perf(pm::ControlAbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+    _PM.variable_branch_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    _PM.variable_branch_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+
+    # store expressions in rectangular power variable space
+    p = Dict()
+    q = Dict()
+
+    for (l,i,j) in _PM.ref(pm, nw, :arcs_from)
+        vr_fr = var(pm, nw, :vr, i)
+        vi_fr = var(pm, nw, :vi, i)
+        cr_fr = var(pm, nw, :cr, (l,i,j))
+        ci_fr = var(pm, nw, :ci, (l,i,j))
+
+        vr_to = var(pm, nw, :vr, j)
+        vi_to = var(pm, nw, :vi, j)
+        cr_to = var(pm, nw, :cr, (l,j,i))
+        ci_to = var(pm, nw, :ci, (l,j,i))
+        p[(l,i,j)] = vr_fr*cr_fr  + vi_fr*ci_fr
+        q[(l,i,j)] = vi_fr*cr_fr  - vr_fr*ci_fr
+        p[(l,j,i)] = vr_to*cr_to  + vi_to*ci_to
+        q[(l,j,i)] = vi_to*cr_to  - vr_to*ci_to
+    end
+
+    var(pm, nw)[:p] = p
+    var(pm, nw)[:q] = q
+    report && _PM._IM.sol_component_value_edge(pm, _PM.pm_it_sym, nw, :branch, :pf, :pt, ref(pm, nw, :arcs_from), ref(pm, nw, :arcs_to), p)
+    report && _PM._IM.sol_component_value_edge(pm, _PM.pm_it_sym, nw, :branch, :qf, :qt, ref(pm, nw, :arcs_from), ref(pm, nw, :arcs_to), q)
+
+    # _PM.variable_branch_series_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    # _PM.variable_branch_series_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
+
+""
 function variable_gen_current(pm::ControlAbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
     _PM.variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     _PM.variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
@@ -156,6 +190,58 @@ function constraint_current_from(pm::ControlAbstractIVRModel, n::Int, f_bus, f_i
     JuMP.@NLconstraint(pm.model, ci_fr == (tap*cos(shift)*csi_fr + tap*sin(shift)*csr_fr + g_sh_fr*vi_fr + b_sh_fr*vr_fr)/tm²)
 end
 
+function constraint_current_from_voltage_drop(pm::ControlAbstractIVRModel, n::Int, i::Int, f_bus, t_bus, f_idx, r, x, g_sh_fr, b_sh_fr)
+    vr_fr = var(pm, n, :vr, f_bus)
+    vi_fr = var(pm, n, :vi, f_bus)
+
+    csr_fr =  var(pm, n, :csr, f_idx[1])
+    csi_fr =  var(pm, n, :csi, f_idx[1])
+
+    cr_fr =  var(pm, n, :cr, f_idx)
+    ci_fr =  var(pm, n, :ci, f_idx)
+
+    tap   = ref_or_var(pm, n, i, :branch, "tap")
+    shift = ref_or_var(pm, n, i, :branch, "shift")
+
+    # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
+    # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
+    tm² = tap^2 + 1e-8 # variable in denominator
+    if typeof(shift) == JuMP.VariableRef
+        cos_shift = JuMP.@variable(pm.model)
+        sin_shift = JuMP.@variable(pm.model)
+        JuMP.@NLconstraint(pm.model, cos_shift == cos(shift))
+        JuMP.@NLconstraint(pm.model, sin_shift == sin(shift))
+    else
+        cos_shift = cos(shift)
+        sin_shift = sin(shift)
+    end
+    
+    if typeof(tap) == JuMP.VariableRef
+        inv_tap = JuMP.@variable(pm.model)
+        JuMP.@constraint(pm.model, tap*inv_tap == 1)
+    else
+        inv_tap = 1/tap
+    end
+    
+    # JuMP.@NLconstraint(pm.model, cr_fr == (tap*cos(shift)*csr_fr - tap*sin(shift)*csi_fr + g_sh_fr*vr_fr - b_sh_fr*vi_fr)/tm²)
+    # JuMP.@NLconstraint(pm.model, ci_fr == (tap*cos(shift)*csi_fr + tap*sin(shift)*csr_fr + g_sh_fr*vi_fr + b_sh_fr*vr_fr)/tm²)
+    JuMP.@constraint(pm.model, cr_fr*tap == cos_shift*csr_fr - sin_shift*csi_fr + (g_sh_fr*vr_fr - b_sh_fr*vi_fr)*inv_tap)
+    JuMP.@constraint(pm.model, ci_fr*tap == cos_shift*csi_fr + sin_shift*csr_fr + (g_sh_fr*vi_fr + b_sh_fr*vr_fr)*inv_tap)
+
+    vr_to = var(pm, n, :vr, t_bus)
+    vi_to = var(pm, n, :vi, t_bus)
+
+    csr_fr =  var(pm, n, :csr, f_idx[1])
+    csi_fr =  var(pm, n, :csi, f_idx[1])
+    
+    # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
+    # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
+    tm² = tap^2 + 1e-8 # variable in denominator
+
+    JuMP.@constraint(pm.model, vr_to*tap == (vr_fr*cos_shift + vi_fr*sin_shift) - r*csr_fr*tap + x*csi_fr*tap)
+    JuMP.@constraint(pm.model, vi_to*tap == (vi_fr*cos_shift - vr_fr*sin_shift) - r*csi_fr*tap - x*csr_fr*tap)
+end
+
 
 """
 Defines how current distributes over series and shunt impedances of a pi-model branch
@@ -172,6 +258,25 @@ function constraint_current_to(pm::ControlAbstractIVRModel, n::Int, t_bus, f_idx
 
     JuMP.@NLconstraint(pm.model, cr_to == csr_to + g_sh_to*vr_to - b_sh_to*vi_to)
     JuMP.@NLconstraint(pm.model, ci_to == csi_to + g_sh_to*vi_to + b_sh_to*vr_to)
+end
+
+function constraint_current_to_perf(pm::ControlAbstractIVRModel, n::Int, t_bus, f_idx, t_idx, g_sh_to, b_sh_to, i::Int)
+    vr_to = var(pm, n, :vr, t_bus)
+    vi_to = var(pm, n, :vi, t_bus)
+
+    # csr_to =  var(pm, n, :csr, f_idx[1])
+    # csi_to =  var(pm, n, :csi, f_idx[1])
+
+    cr_to =  var(pm, n, :cr, t_idx)
+    ci_to =  var(pm, n, :ci, t_idx)
+
+    if !haskey(var(pm, n), :csr)
+        var(pm, n)[:csr] = Dict()
+        var(pm, n)[:csi] = Dict()
+    end
+
+    var(pm, n, :csr)[f_idx[1]] = JuMP.@expression(pm.model, -cr_to + g_sh_to*vr_to - b_sh_to*vi_to)
+    var(pm, n, :csi)[f_idx[1]] = JuMP.@expression(pm.model, -ci_to + g_sh_to*vi_to + b_sh_to*vr_to)
 end
 
 """
@@ -194,8 +299,8 @@ function constraint_voltage_drop(pm::ControlAbstractIVRModel, n::Int, i, f_bus, 
     # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
     tm² = tap^2 + 1e-8 # variable in denominator
 
-    JuMP.@NLconstraint(pm.model, vr_to == (vr_fr*tap*cos(shift) + vi_fr*tap*sin(shift))/tm² - r*csr_fr + x*csi_fr)
-    JuMP.@NLconstraint(pm.model, vi_to == (vi_fr*tap*cos(shift) - vr_fr*tap*sin(shift))/tm² - r*csi_fr - x*csr_fr)
+    JuMP.@NLconstraint(pm.model, vr_to*tap == (vr_fr*cos(shift) + vi_fr*sin(shift)) - r*csr_fr + x*csi_fr)
+    JuMP.@NLconstraint(pm.model, vi_to*tap == (vi_fr*cos(shift) - vr_fr*sin(shift)) - r*csi_fr - x*csr_fr)
 end
 
 "`pg[i] == pg`"
