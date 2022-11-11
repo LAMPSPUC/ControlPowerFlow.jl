@@ -37,7 +37,6 @@ include("form/shared.jl")
 
 include("prob/pf.jl")
 include("prob/pf_iv.jl")
-include("prob/pf_iv_performance.jl")
 
 # including control actions defaults 
 # Brazilian ANAREDE control actions
