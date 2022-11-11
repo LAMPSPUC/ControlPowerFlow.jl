@@ -242,7 +242,6 @@ function constraint_current_from_voltage_drop(pm::ControlAbstractIVRModel, n::In
     JuMP.@constraint(pm.model, vi_to*tap == (vi_fr*cos_shift - vr_fr*sin_shift) - r*csi_fr*tap - x*csr_fr*tap)
 end
 
-
 """
 Defines how current distributes over series and shunt impedances of a pi-model branch
 """
@@ -361,7 +360,6 @@ function constraint_gen_reactive_bounds(pm::ControlAbstractIVRModel, n::Int, i, 
     JuMP.@constraint(pm.model, vi*cr  - vr*ci <= qgmax - low)
 end
 
-
 "`p_fr[i] == pref_fr, p_to[i] == pref_to`"
 function constraint_dcline_setpoint_active_fr(pm::ControlAbstractIVRModel, n::Int, f_idx, t_idx, pref_fr, pref_to)
     (l, f_bus, t_bus) = f_idx
@@ -445,60 +443,4 @@ function constraint_reactive_power_setpoint(pm::ControlAbstractIVRModel, n::Int,
     slack = slack_in_equality_constraint(pm, n, i, "constraint_reactive_power_setpoint")
 
     JuMP.@NLconstraint(pm.model, qf == q + slack)
-end
-
-"""
-Defines how current distributes over series and shunt impedances of a pi-model branch
-"""
-function expression_branch_current_from_performance(pm::ControlAbstractIVRModel, n::Int, i, f_bus, f_idx, g_sh_fr, b_sh_fr, tr, ti, tm)
-    vr_fr = var(pm, n, :vr, f_bus)
-    vi_fr = var(pm, n, :vi, f_bus)
-
-    csr_fr =  var(pm, n, :csr, i)
-    csi_fr =  var(pm, n, :csi, i)
-
-    tap   = ref_or_var(pm, n, i, :branch, "tap")
-    shift = ref_or_var(pm, n, i, :branch, "shift")
-
-    # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
-    # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
-    tm² = tap^2 + 1e-8  # variable in denominator
-    tm  = tap   + 1e-5  # variable in denominator
-    var(pm, n, :cr)[f_idx] = JuMP.@NLexpression(pm.model, (cos(shift)*csr_fr)/tm - (sin(shift)*csi_fr)/tm + (g_sh_fr*vr_fr - b_sh_fr*vi_fr)/tm²)
-    var(pm, n, :ci)[f_idx] = JuMP.@NLexpression(pm.model, (cos(shift)*csi_fr)/tm + (sin(shift)*csr_fr)/tm + (g_sh_fr*vi_fr + b_sh_fr*vr_fr)/tm²)
-end
-
-"""
-Defines how current distributes over series and shunt impedances of a pi-model branch
-"""
-function expression_branch_current_to_performance(pm::ControlAbstractIVRModel, n::Int, i, t_bus, t_idx, g_sh_to, b_sh_to)
-    vr_to = var(pm, n, :vr, t_bus)
-    vi_to = var(pm, n, :vi, t_bus)
-
-    csr_to =  var(pm, n, :csr, i)
-    csi_to =  var(pm, n, :csi, i)
-
-    var(pm, n, :cr)[t_idx] = JuMP.@NLexpression(pm.model, - csr_to + g_sh_to*vr_to - b_sh_to*vi_to)
-    var(pm, n, :ci)[t_idx] = JuMP.@NLexpression(pm.model, - csi_to + g_sh_to*vi_to + b_sh_to*vr_to)
-end
-
-""
-function expression_branch_current_series_performance(pm::ControlAbstractIVRModel, n::Int, i, f_bus, t_bus, f_idx, r, x, tr, ti, tm)
-    vr_fr = var(pm, n, :vr, f_bus)
-    vi_fr = var(pm, n, :vi, f_bus)
-    
-    vr_to = var(pm, n, :vr, t_bus)
-    vi_to = var(pm, n, :vi, t_bus)
-
-    zm = sqrt(r^2+x^2)
-
-    tap   = ref_or_var(pm, n, i, :branch, "tap")
-    shift = ref_or_var(pm, n, i, :branch, "shift")
-    
-    # tr = (tap .* cos.(shift)) # cannot write cos(variable) outside NLexpression
-    # ti = (tap .* sin.(shift)) # cannot write sin(variable) outside NLexpression
-    tm² = tap^2 + 1e-8  # variable in denominator
-    tm  = tap   + 1e-5  # variable in denominator
-    var(pm, n, :csr)[f_idx[1]] = JuMP.@NLexpression(pm.model, ( vr_fr*((cos(shift))*r - (sin(shift))*x)/tm + vi_fr*((cos(shift))*x + (sin(shift))*r)/tm - vr_to*r - vi_to*x)/(zm^2))
-    var(pm, n, :csi)[f_idx[1]] = JuMP.@NLexpression(pm.model, (-vr_fr*((cos(shift))*x + (sin(shift))*r)/tm + vi_fr*((cos(shift))*r - (sin(shift))*x)/tm + vr_to*x - vi_to*r)/(zm^2))
 end
